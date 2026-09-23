@@ -174,3 +174,5 @@ const get_mouse_pos = (e) => {
     const b = canvas.getBoundingClientRect();
     return [e.pageX - (b.left + window.scrollX), e.pageY - (b.top + window.scrollY)];
 }
+
+export {};
