@@ -29,7 +29,6 @@ let pegs = [[5, 4, 3, 2, 1], [], []];
 const disk_height = 20;
 
 let select = 0
-let target = 0
 let msg = ""
 
 /**
@@ -44,7 +43,7 @@ const draw = (c) => {
     // Highlight selected peg
     if (select > 0) {
         c.fillStyle = "rgb(132, 193, 211)";
-        c.fillRect(200 * select - 200, 0, 200, 600);
+        c.fillRect((select - 1) * 200, 0, 200, 600);
     }
 
     // Draw dashed lines to separate pegs
@@ -60,8 +59,6 @@ const draw = (c) => {
 
     // Draw pegs
     c.lineWidth = 4;
-    c.strokeStyle = "#000";
-
     c.beginPath();
     c.moveTo(100, 500);
     c.lineTo(100, 300);
@@ -99,32 +96,26 @@ draw(c);
 const handleClick = (e) => {
     const [x, y] = get_mouse_pos(e);
 
-    if (select === 0) {
-        if (x < 200) {
-            select = 1;
-        } else if (x < 400) {
-            select = 2;
-        } else {
-            select = 3;
-        }
-        // Check if the selected peg has any disks
-        if (pegs[select - 1].length === 0) {
-            select = 0;
-        }
-        msg = "";
-        draw(c);
+    let region = 0;
+    if (x < 200) {
+        region = 1;
+    } else if (x < 400) {
+        region = 2;
     } else {
-        if (x < 200) {
-            target = 1;
-        } else if (x < 400) {
-            target = 2;
-        } else {
-            target = 3;
-        }
+        region = 3;
+    }
 
-        if (select !== target) {
+    if (select === 0) {
+        // Check if the selected peg has any disks
+        if (pegs[region - 1].length > 0) {
+            select = region;
+            msg = "";
+            draw(c);
+        }
+    } else {
+        if (select !== region) {
             const sourcePeg = pegs[select - 1];
-            const targetPeg = pegs[target - 1];
+            const targetPeg = pegs[region - 1];
 
             if (targetPeg.length > 0 && sourcePeg[sourcePeg.length - 1] > targetPeg[targetPeg.length - 1]) {
                 msg = "Cannot place larger disk on top of smaller disk";
