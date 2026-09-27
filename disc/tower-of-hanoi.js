@@ -109,11 +109,9 @@ const handleClick = (e) => {
         }
         // Check if the selected peg has any disks
         if (pegs[select - 1].length === 0) {
-            msg = "Selected peg is empty";
             select = 0;
-        } else {
-            msg = "";
         }
+        msg = "";
         draw(c);
     } else {
         if (x < 200) {
@@ -124,22 +122,19 @@ const handleClick = (e) => {
             target = 3;
         }
 
-        if (select === target) {
-            msg = "Cannot move to the same peg";
-        }
+        if (select !== target) {
+            const sourcePeg = pegs[select - 1];
+            const targetPeg = pegs[target - 1];
 
-        // Check if the move is valid
-        const sourcePeg = pegs[select - 1];
-        const targetPeg = pegs[target - 1];
-
-        if (targetPeg.length > 0 && sourcePeg[sourcePeg.length - 1] > targetPeg[targetPeg.length - 1]) {
-            msg = "Cannot place larger disk on top of smaller disk";
-        } else {
-            // Move the disk
-            /** @type {number} */
-            const disk = /** number */ (sourcePeg.pop());
-            targetPeg.push(disk);
-            msg = "";
+            if (targetPeg.length > 0 && sourcePeg[sourcePeg.length - 1] > targetPeg[targetPeg.length - 1]) {
+                msg = "Cannot place larger disk on top of smaller disk";
+            } else {
+                // Move the disk
+                /** @type {number} */
+                const disk = /** number */ (sourcePeg.pop());
+                targetPeg.push(disk);
+                msg = "";
+            }
         }
 
         select = 0;
