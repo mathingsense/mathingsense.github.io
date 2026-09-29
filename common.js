@@ -101,3 +101,18 @@ export const isInCircle = (px, py, cx, cy, r) => {
     const dy = py - cy;
     return dx * dx + dy * dy <= r * r;
 };
+
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @param {PointerEvent} e
+ * @returns {[number, number]}
+ */
+export const getPointerPos = (canvas, e) => {
+    const b = canvas.getBoundingClientRect();
+    return [
+        e.pageX - (b.left + window.scrollX),
+        e.pageY - (b.top + window.scrollY)
+    ];
+    // Below is simpler. Check later.
+    // return [e.clientX - rect.left, e.clientY - rect.top];
+};
