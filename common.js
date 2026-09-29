@@ -45,16 +45,15 @@ export const distance = (A, B) => {
     return Math.hypot(B.x - A.x, B.y - A.y);
 };
 
+export const STROKE = 1, FILL = 2, BOTH = 3;
+
 /**
  * @param {CanvasRenderingContext2D} c
- * @param {number} x
- * @param {number} y
- * @param {number} r
+ * @param {*} mode
  */
-export const fillCircle = (c, x, y, r) => {
-    c.beginPath();
-    c.arc(x, y, r, 0, Math.PI * 2);
-    c.fill();
+const paint = (c, mode) => {
+    if (mode & FILL) c.fill();
+    if (mode & STROKE) c.stroke();
 };
 
 /**
@@ -62,24 +61,12 @@ export const fillCircle = (c, x, y, r) => {
  * @param {number} x
  * @param {number} y
  * @param {number} r
+ * @param {number} mode
  */
-export const strokeCircle = (c, x, y, r) => {
+export const circle = (c, x, y, r, mode) => {
     c.beginPath();
     c.arc(x, y, r, 0, Math.PI * 2);
-    c.stroke();
-};
-
-/**
- * @param {CanvasRenderingContext2D} c
- * @param {number} x
- * @param {number} y
- * @param {number} r
- */
-export const fillStrokeCircle = (c, x, y, r) => {
-    c.beginPath();
-    c.arc(x, y, r, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
+    paint(c, mode);
 };
 
 /**

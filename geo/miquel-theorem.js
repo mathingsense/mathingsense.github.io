@@ -1,6 +1,6 @@
 // @ts-check
 
-import { distance, strokeTriangle, isInCircle, fillCircle, fillStrokeCircle } from "../common.js";
+import { FILL, BOTH, distance, strokeTriangle, isInCircle, circle } from "../common.js";
 
 const canvas = /** @type {HTMLCanvasElement | null} */ (document.getElementById("canvas"));
 if (canvas === null) {
@@ -193,29 +193,29 @@ const draw = (c) => {
     strokeTriangle(c, A, B, C);;
     c.fillStyle = "#000";
     for (const v of vs) {
-        fillCircle(c, v.x, v.y, r)
+        circle(c, v.x, v.y, r, FILL);
     }
 
-    fillCircle(c, ab.x, ab.y, r)
-    fillCircle(c, bc.x, bc.y, r)
-    fillCircle(c, ca.x, ca.y, r)
+    circle(c, ab.x, ab.y, r, FILL);
+    circle(c, bc.x, bc.y, r, FILL);
+    circle(c, ca.x, ca.y, r, FILL);
 
     const k = circumcircle(A, ab, ca)
     if (k) {
         c.fillStyle = colors[0]
-        fillStrokeCircle(c, k.x, k.y, k.r)
+        circle(c, k.x, k.y, k.r, BOTH);
     }
 
     const l = circumcircle(B, bc, ab)
     if (l) {
         c.fillStyle = colors[1]
-        fillStrokeCircle(c, l.x, l.y, l.r)
+        circle(c, l.x, l.y, l.r, BOTH);
     }
 
     const m = circumcircle(C, ca, bc)
     if (m) {
         c.fillStyle = colors[2]
-        fillStrokeCircle(c, m.x, m.y, m.r)
+        circle(c, m.x, m.y, m.r, BOTH);
     }
 
     let d = circleIntersections(k, l)
@@ -228,7 +228,7 @@ const draw = (c) => {
         M = h[1];
     }
     c.fillStyle = "red"
-    fillStrokeCircle(c, M.x, M.y, r);
+    circle(c, M.x, M.y, r, BOTH);
 }
 draw(c);
 
@@ -295,5 +295,3 @@ const get_mouse_pos = (e) => {
     const b = canvas.getBoundingClientRect();
     return [e.pageX - (b.left + window.scrollX), e.pageY - (b.top + window.scrollY)];
 }
-
-export { };
