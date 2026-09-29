@@ -1,6 +1,40 @@
-// @ts-check
-
 /** @typedef {{x: number, y: number}} Point */
+
+/**
+ * @param {string} id
+ * @param {number} width
+ * @param {number} height
+ * @returns {[HTMLCanvasElement, CanvasRenderingContext2D]}
+ */
+export const initCanvas = (id, width, height) => {
+    if (!(width > 0 && height > 0)) {
+        throw new RangeError('width and height must be positive');
+    }
+
+    const el = document.getElementById(id);
+    if (el === null) {
+        throw new Error(`element #${id} not found`);
+    }
+    if (!(el instanceof HTMLCanvasElement)) {
+        throw new Error(`element #${id} is not a <canvas>`);
+    }
+
+    const ctx = el.getContext("2d");
+    if (ctx === null) {
+        throw new Error(`could not get a 2D context for #${id}`);
+    }
+
+    // Sizes the canvas for crisp rendering on HiDPI displays.
+    const dpr = window.devicePixelRatio || 1;
+
+    el.style.width = `${width}px`;
+    el.style.height = `${height}px`;
+    el.width = Math.round(width * dpr);
+    el.height = Math.round(height * dpr);
+
+    ctx.setTransform(el.width / width, 0, 0, el.height / height, 0, 0);
+    return [el, ctx];
+};
 
 /**
  * @param {Point} A
