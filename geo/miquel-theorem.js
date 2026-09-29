@@ -1,6 +1,6 @@
 // @ts-check
 
-import { FILL, BOTH, distance, strokeTriangle, isInCircle, circle } from "../common.js";
+import { STROKE, FILL, BOTH, distance, isInCircle, circle, triangle } from "../common.js";
 
 const canvas = /** @type {HTMLCanvasElement | null} */ (document.getElementById("canvas"));
 if (canvas === null) {
@@ -190,7 +190,7 @@ const draw = (c) => {
     c.strokeStyle = "#000000";
     c.fillRect(0, 0, width, height);
 
-    strokeTriangle(c, A, B, C);;
+    triangle(c, A.x, A.y, B.x, B.y, C.x, C.y, STROKE);
     c.fillStyle = "#000";
     for (const v of vs) {
         circle(c, v.x, v.y, r, FILL);

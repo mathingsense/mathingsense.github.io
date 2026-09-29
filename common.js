@@ -71,17 +71,21 @@ export const circle = (c, x, y, r, mode) => {
 
 /**
  * @param {CanvasRenderingContext2D} c
- * @param {Point} A
- * @param {Point} B
- * @param {Point} C
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} x2
+ * @param {number} y2
+ * @param {number} x3
+ * @param {number} y3
+ * @param {number} mode
  */
-export const strokeTriangle = (c, A, B, C) => {
+export const triangle = (c, x1, y1, x2, y2, x3, y3, mode) => {
     c.beginPath();
-    c.moveTo(A.x, A.y);
-    c.lineTo(B.x, B.y);
-    c.lineTo(C.x, C.y);
+    c.moveTo(x1, y1);
+    c.lineTo(x2, y2);
+    c.lineTo(x3, y3);
     c.closePath();
-    c.stroke();
+    paint(c, mode);
 };
 
 /**

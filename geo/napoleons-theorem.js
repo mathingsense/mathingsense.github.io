@@ -1,4 +1,4 @@
-import { initCanvas } from "../common.js";
+import { STROKE, BOTH, initCanvas, triangle } from "../common.js";
 
 const [canvas, c] = initCanvas("canvas", 600, 600);
 
@@ -29,24 +29,6 @@ let currentDrag = A;
 /** @type {{x: number, y: number}[]} */
 let cs = [];    // center of side triangles
 
-
-/**
- * @param {CanvasRenderingContext2D} c
- * @param {number} x1
- * @param {number} y1
- * @param {number} x2
- * @param {number} y2
- * @param {number} x3
- * @param {number} y3
- */
-const draw_triangle = (c, x1, y1, x2, y2, x3, y3) => {
-    c.beginPath();
-    c.moveTo(x1, y1);
-    c.lineTo(x2, y2);
-    c.lineTo(x3, y3);
-    c.closePath();
-}
-
 /**
  * @param {CanvasRenderingContext2D} c 
  */
@@ -57,10 +39,8 @@ const sideTriangle = (c) => {
         let x3 = vs[i].x + dx * Math.cos(deg) - dy * Math.sin(deg);
         let y3 = vs[i].y + dx * Math.sin(deg) + dy * Math.cos(deg);
 
-        draw_triangle(c, vs[i].x, vs[i].y, vs[(i + 1) % 3].x, vs[(i + 1) % 3].y, x3, y3);
         c.fillStyle = colors[i];
-        c.fill();
-        c.stroke();
+        triangle(c, vs[i].x, vs[i].y, vs[(i + 1) % 3].x, vs[(i + 1) % 3].y, x3, y3, BOTH);
 
         // Center of side triangle
         let x = (vs[i].x + vs[(i + 1) % 3].x + x3) / 3;
@@ -76,11 +56,10 @@ const draw = (c) => {
     c.fillStyle = "#ffffff";
     c.fillRect(0, 0, width, height);
 
-    draw_triangle(c, A.x, A.y, B.x, B.y, C.x, C.y);
-    c.stroke();
+    // triangle(c, A.x, A.y, B.x, B.y, C.x, C.y, STROKE);
+
     sideTriangle(c);
-    draw_triangle(c, cs[0].x, cs[0].y, cs[1].x, cs[1].y, cs[2].x, cs[2].y);
-    c.stroke();
+    triangle(c, cs[0].x, cs[0].y, cs[1].x, cs[1].y, cs[2].x, cs[2].y, STROKE);
 
     // Draw draggable vertices
     c.fillStyle = "#0000ff";
