@@ -58,6 +58,34 @@ const paint = (c, mode) => {
 
 /**
  * @param {CanvasRenderingContext2D} c
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} x2
+ * @param {number} y2
+ */
+export const line = (c, x1, y1, x2, y2) => {
+    c.beginPath();
+    c.moveTo(x1, y1);
+    c.lineTo(x2, y2);
+    c.stroke();
+}
+
+/**
+ * @param {CanvasRenderingContext2D} c
+ * @param {number} x
+ * @param {number} y
+ * @param {number} w
+ * @param {number} h
+ * @param {number} mode
+ */
+export const rect = (c, x, y, w, h, mode) => {
+    c.beginPath();
+    c.rect(x, y, w, h);
+    paint(c, mode);
+}
+
+/**
+ * @param {CanvasRenderingContext2D} c
  * @param {number} x
  * @param {number} y
  * @param {number} r
@@ -104,7 +132,7 @@ export const isInCircle = (px, py, cx, cy, r) => {
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @param {PointerEvent} e
+ * @param {MouseEvent} e
  * @returns {[number, number]}
  */
 export const getPointerPos = (canvas, e) => {
@@ -115,4 +143,20 @@ export const getPointerPos = (canvas, e) => {
     ];
     // Below is simpler. Check later.
     // return [e.clientX - rect.left, e.clientY - rect.top];
+};
+
+/**
+ * Returns a random integer x such that min <= x <= max
+ * @param {number} min - Inclusive lower bound (integer)
+ * @param {number} max - Inclusive upper bound (integer, >= min)
+ * @returns {number}
+ */
+export const randomInt = (min, max) => {
+    if (!Number.isInteger(min) || !Number.isInteger(max)) {
+        throw new TypeError("min and max must be integers");
+    }
+    if (min > max) {
+        throw new RangeError("min must be <= max");
+    }
+    return min + Math.floor((max - min + 1) * Math.random());
 };

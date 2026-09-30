@@ -1,31 +1,13 @@
-// @ts-check
+import { initCanvas, getPointerPos, FILL, BOTH, line, rect } from "../common.js";
 
-const canvas = /** @type {HTMLCanvasElement | null} */ (document.getElementById("canvas"));
-if (canvas === null) {
-    throw new Error("canvas element is not found");
-}
+const width = 600;
+const height = 600;
 
-const c = canvas.getContext("2d");
-if (c === null) {
-    throw new Error("2D rendering context is not found");
-}
+const [canvas, c] = initCanvas("canvas", width, height)
 
-const pixelRatio = window.devicePixelRatio || 1;
-
-const size = 600;
-canvas.style.width = size + "px";
-canvas.style.height = size + "px";
-canvas.width = size * pixelRatio;
-canvas.height = size * pixelRatio;
-c.scale(pixelRatio, pixelRatio);
-
-// -------------------------------------------------------------------
-
-const width = size;
-const height = size;
 const colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
 
-let pegs = [[5, 4, 3, 2, 1], [], []];
+const pegs = [[5, 4, 3, 2, 1], [], []];
 const disk_height = 20;
 
 let select = 0
@@ -43,30 +25,21 @@ const draw = (c) => {
     // Highlight selected peg
     if (select > 0) {
         c.fillStyle = "rgb(132, 193, 211)";
-        c.fillRect((select - 1) * 200, 0, 200, 600);
+        rect(c, (select - 1) * 200, 0, 200, 600, FILL);
     }
 
     // Draw dashed lines to separate pegs
-    c.beginPath();
     c.setLineDash([15, 10]); // [dash length, gap length]
-    c.moveTo(200, 0);
-    c.lineTo(200, 600);
-    c.moveTo(400, 0);
-    c.lineTo(400, 600);
-    c.stroke();
+    line(c, 200, 0, 200, 600);
+    line(c, 400, 0, 400, 600);
 
     c.setLineDash([])
 
     // Draw pegs
     c.lineWidth = 4;
-    c.beginPath();
-    c.moveTo(100, 500);
-    c.lineTo(100, 300);
-    c.moveTo(300, 500);
-    c.lineTo(300, 300);
-    c.moveTo(500, 500);
-    c.lineTo(500, 300);
-    c.stroke();
+    line(c, 100, 500, 100, 300);
+    line(c, 300, 500, 300, 300);
+    line(c, 500, 500, 500, 300);
 
     // Draw disks
     for (let i = 0; i < pegs.length; i++) {
@@ -77,8 +50,7 @@ const draw = (c) => {
             const x = 100 + i * 200 - disk_width / 2;
             const y = 500 - (j + 1) * disk_height;
             c.fillStyle = colors[disk_size - 1];
-            c.fillRect(x, y, disk_width, disk_height);
-            c.strokeRect(x, y, disk_width, disk_height);
+            rect(c, x, y, disk_width, disk_height, BOTH);
         }
     }
 
@@ -94,7 +66,7 @@ draw(c);
  * @param {MouseEvent} e
  */
 const handleClick = (e) => {
-    const [x, y] = get_mouse_pos(e);
+    const [x, _] = getPointerPos(canvas, e);
 
     let region = 0;
     if (x < 200) {
@@ -135,14 +107,3 @@ const handleClick = (e) => {
 
 canvas.style.touchAction = "none";
 canvas.addEventListener("click", handleClick, false);
-
-/**
- * @param {MouseEvent} e
- * @returns {[number, number]}
- */
-const get_mouse_pos = (e) => {
-    const b = canvas.getBoundingClientRect();
-    return [e.pageX - (b.left + window.scrollX), e.pageY - (b.top + window.scrollY)];
-}
-
-export { };
