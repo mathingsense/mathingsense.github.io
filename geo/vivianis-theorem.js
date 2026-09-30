@@ -1,30 +1,12 @@
-// @ts-check
+import { initCanvas, getPointerPos, STROKE, FILL, circle, triangle, isInCircle, distance } from "../common.js";
 
-const canvas = /** @type {HTMLCanvasElement | null} */ (document.getElementById("canvas"));
-if (canvas === null) {
-    throw new Error("canvas element is not found");
-}
+const width = 600;
+const height = 600;
 
-const c = canvas.getContext("2d");
-if (c === null) {
-    throw new Error("2D rendering context is not found");
-}
-
-const pixelRatio = window.devicePixelRatio || 1;
-
-const size = 600;
-canvas.style.width = size + "px";
-canvas.style.height = size + "px";
-canvas.width = size * pixelRatio;
-canvas.height = size * pixelRatio;
-c.scale(pixelRatio, pixelRatio);
-
-// -------------------------------------------------------------------
+const [canvas, c] = initCanvas("canvas", width, height);
 
 /** @typedef {{x: number, y: number}} Point */
 
-const width = size;
-const height = size;
 const colors = ["#f00", "#0f0", "#00f"];
 
 const s = 300
@@ -58,21 +40,6 @@ let dragging = false;
 
 /**
  * @param {CanvasRenderingContext2D} c
- * @param {Point} A
- * @param {Point} B
- * @param {Point} C
- */
-const draw_triangle = (c, A, B, C) => {
-    c.beginPath();
-    c.moveTo(A.x, A.y);
-    c.lineTo(B.x, B.y);
-    c.lineTo(C.x, C.y);
-    c.closePath();
-    c.stroke()
-}
-
-/**
- * @param {CanvasRenderingContext2D} c
  * @param {number} x1
  * @param {number} y1
  * @param {number} x2
@@ -84,6 +51,20 @@ const line = (c, x1, y1, x2, y2, color) => {
     c.beginPath();
     c.moveTo(x1, y1);
     c.lineTo(x2, y2);
+    c.stroke();
+}
+
+/**
+ * @param {CanvasRenderingContext2D} c
+ * @param {Point} A
+ * @param {Point} B
+ * @param {string} color
+ */
+const line2 = (c, A, B, color) => {
+    c.strokeStyle = color;
+    c.beginPath();
+    c.moveTo(A.x, A.y);
+    c.lineTo(B.x, B.y);
     c.stroke();
 }
 
@@ -117,30 +98,6 @@ let p2 = get_projection_point(p, B, C);
 let p3 = get_projection_point(p, C, A);
 
 /**
- * @param {Point} p1 
- * @param {Point} p2 
- * @returns {number}
- */
-const dist = (p1, p2) => {
-    return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
-}
-
-/**
- * Draws a line between two points on the canvas.
- * @param {CanvasRenderingContext2D} c 
- * @param {Point} A 
- * @param {Point} B 
- * @param {string} color 
- */
-const line2 = (c, A, B, color) => {
-    c.strokeStyle = color;
-    c.beginPath();
-    c.moveTo(A.x, A.y);
-    c.lineTo(B.x, B.y);
-    c.stroke();
-}
-
-/**
  * @param {CanvasRenderingContext2D} c 
  */
 const draw = (c) => {
@@ -149,21 +106,17 @@ const draw = (c) => {
     c.strokeStyle = "#000000";
     c.fillRect(0, 0, width, height);
 
-    draw_triangle(c, A, B, C);;
+    triangle(c, A.x, A.y, B.x, B.y, C.x, C.y, STROKE);
 
     // Draw draggable vertices
     c.fillStyle = "#000";
-    c.beginPath();
-    c.moveTo(p.x, p.y);
-    c.arc(p.x, p.y, r, 0, 2 * Math.PI);
-    c.closePath();
-    c.fill();
+    circle(c, p.x, p.y, r, FILL);
 
     c.lineWidth = 4;
 
-    const l1 = dist(p, p1);
-    const l2 = dist(p, p2);
-    const l3 = dist(p, p3);
+    const l1 = distance(p, p1);
+    const l2 = distance(p, p2);
+    const l3 = distance(p, p3);
     line2(c, p, p1, colors[0]);
     line2(c, p, p2, colors[1]);
     line2(c, p, p3, colors[2]);
@@ -179,9 +132,8 @@ draw(c);
  * @param {PointerEvent} e
  */
 const pointerDown = (e) => {
-    const [x, y] = get_mouse_pos(e);
-    const is_inside = (p.x - x) ** 2 + (p.y - y) ** 2 < r ** 2
-    if (is_inside) {
+    const [x, y] = getPointerPos(canvas, e);
+    if (isInCircle(x, y, p.x, p.y, r)) {
         dragging = true;
     }
 }
@@ -227,7 +179,7 @@ const isPointInTriangle = (p, a, b, c) => {
 const pointerMove = (e) => {
     e.preventDefault();
     if (dragging) {
-        const [x, y] = get_mouse_pos(e);
+        const [x, y] = getPointerPos(canvas, e);
         if (!isPointInTriangle({ x, y }, A, B, C)) return;
 
         p.x = x;
@@ -245,14 +197,3 @@ canvas.addEventListener("pointerdown", pointerDown, false);
 canvas.addEventListener("pointerup", pointerUp, false);
 canvas.addEventListener("pointermove", pointerMove, false);
 canvas.addEventListener("pointerout", pointerUp, false);
-
-/**
- * @param {PointerEvent} e
- * @returns {[number, number]}
- */
-const get_mouse_pos = (e) => {
-    const b = canvas.getBoundingClientRect();
-    return [e.pageX - (b.left + window.scrollX), e.pageY - (b.top + window.scrollY)];
-}
-
-export { };

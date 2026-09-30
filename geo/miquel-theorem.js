@@ -1,32 +1,12 @@
-// @ts-check
+import { initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, triangle, getPointerPos } from "../common.js";
 
-import { STROKE, FILL, BOTH, distance, isInCircle, circle, triangle } from "../common.js";
+const width = 600;
+const height = 600;
 
-const canvas = /** @type {HTMLCanvasElement | null} */ (document.getElementById("canvas"));
-if (canvas === null) {
-    throw new Error("canvas element is not found");
-}
-
-const c = canvas.getContext("2d");
-if (c === null) {
-    throw new Error("2D rendering context is not found");
-}
-
-const pixelRatio = window.devicePixelRatio || 1;
-
-const size = 600;
-canvas.style.width = size + "px";
-canvas.style.height = size + "px";
-canvas.width = size * pixelRatio;
-canvas.height = size * pixelRatio;
-c.scale(pixelRatio, pixelRatio);
-
-// -------------------------------------------------------------------
+const [canvas, c] = initCanvas("canvas", width, height);
 
 /** @typedef {{x: number, y: number}} Point */
 
-const width = size;
-const height = size;
 const colors = [
     "rgba(255, 0, 0, 0.2)",
     "rgba(0, 255, 0, 0.2)",
@@ -236,7 +216,7 @@ draw(c);
  * @param {PointerEvent} e
  */
 const pointerDown = (e) => {
-    const [x, y] = get_mouse_pos(e);
+    const [x, y] = getPointerPos(canvas, e);
     for (const p of vs) {
         if (isInCircle(x, y, p.x, p.y, r)) {
             dragging = true;
@@ -263,7 +243,7 @@ const pointerUp = () => {
 const pointerMove = (e) => {
     e.preventDefault();
     if (dragging) {
-        const [x, y] = get_mouse_pos(e);
+        const [x, y] = getPointerPos(canvas, e);
         if (type === "corner") {
             t.x = x;
             t.y = y;
@@ -286,12 +266,3 @@ canvas.addEventListener("pointerdown", pointerDown, false);
 canvas.addEventListener("pointerup", pointerUp, false);
 canvas.addEventListener("pointermove", pointerMove, false);
 canvas.addEventListener("pointerout", pointerUp, false);
-
-/**
- * @param {PointerEvent} e
- * @returns {[number, number]}
- */
-const get_mouse_pos = (e) => {
-    const b = canvas.getBoundingClientRect();
-    return [e.pageX - (b.left + window.scrollX), e.pageY - (b.top + window.scrollY)];
-}
