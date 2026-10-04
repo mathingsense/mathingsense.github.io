@@ -83,11 +83,16 @@ export const extLine = (c, x1, y1, x2, y2, w, h) => {
     const dx = x2 - x1;
     const dy = y2 - y1;
 
-    const k = Math.max(w, h) * 2;
-    const startX = x1 - dx * k;
-    const startY = y1 - dy * k;
-    const endX = x2 + dx * k;
-    const endY = y2 + dy * k;
+    // Normalize.
+    const length = Math.hypot(dx, dy);
+    const ux = dx / length;
+    const uy = dy / length;
+
+    const extension = Math.max(w, h) * 2;
+    const startX = x1 - ux * extension;
+    const startY = y1 - uy * extension;
+    const endX = x2 + ux * extension;
+    const endY = y2 + uy * extension;
 
     c.beginPath();
     c.moveTo(startX, startY);
