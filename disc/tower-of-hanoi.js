@@ -1,4 +1,4 @@
-import { initCanvas, getPointerPos, FILL, BOTH, line, rect } from "../common.js";
+import { initCanvas, getPointerPos, FILL, BOTH, Renderer } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -13,6 +13,8 @@ const disk_height = 20;
 let select = 0
 let msg = ""
 
+const render = new Renderer(c);
+
 /**
  * @param {CanvasRenderingContext2D} c 
  */
@@ -25,21 +27,21 @@ const draw = (c) => {
     // Highlight selected peg
     if (select > 0) {
         c.fillStyle = "rgb(132, 193, 211)";
-        rect(c, (select - 1) * 200, 0, 200, 600, FILL);
+        render.rect4((select - 1) * 200, 0, 200, 600, FILL);
     }
 
     // Draw dashed lines to separate pegs
     c.setLineDash([15, 10]); // [dash length, gap length]
-    line(c, 200, 0, 200, 600);
-    line(c, 400, 0, 400, 600);
+    render.seg4(200, 0, 200, 600);
+    render.seg4(400, 0, 400, 600);
 
     c.setLineDash([])
 
     // Draw pegs
     c.lineWidth = 4;
-    line(c, 100, 500, 100, 300);
-    line(c, 300, 500, 300, 300);
-    line(c, 500, 500, 500, 300);
+    render.seg4(100, 500, 100, 300);
+    render.seg4(300, 500, 300, 300);
+    render.seg4(500, 500, 500, 300);
 
     // Draw disks
     for (let i = 0; i < pegs.length; i++) {
@@ -50,7 +52,7 @@ const draw = (c) => {
             const x = 100 + i * 200 - disk_width / 2;
             const y = 500 - (j + 1) * disk_height;
             c.fillStyle = colors[disk_size - 1];
-            rect(c, x, y, disk_width, disk_height, BOTH);
+            render.rect4(x, y, disk_width, disk_height, BOTH);
         }
     }
 

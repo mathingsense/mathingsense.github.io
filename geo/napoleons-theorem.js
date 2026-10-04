@@ -1,4 +1,4 @@
-import { STROKE, FILL, BOTH, initCanvas, circle, triangle, isInCircle, getPointerPos } from "../common.js";
+import { STROKE, FILL, BOTH, initCanvas, isInCircle, getPointerPos, Pt, Triangle, Renderer } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -7,46 +7,19 @@ const [canvas, c] = initCanvas("canvas", width, height);
 
 const colors = ["#ffff0099", "#00ffff99", "#ff00ff99"];
 
-// Initial coordinate of vertices of the main triangle
-const A = { x: 220, y: 185 };
-const B = { x: 430, y: 360 };
-const C = { x: 210, y: 405 };
+// Initial coordinate of vertices of the main triangle.
+const A = new Pt(220, 185);
+const B = new Pt(430, 360);
+const C = new Pt(210, 405);
 const vs = [A, B, C];
-
-/** @type {{x: number, y: number}[]} */
-const cs = [];          // center of side triangles
 
 const r = 10;           // vertex radius
 const deg = -Math.PI / 3;
-const cos = Math.cos(deg);
-const sin = Math.sin(deg);
 
 /** @type {{x: number, y: number} | null} */
 let currentDrag = null;
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const sideTriangle = (c) => {
-    for (let i = 0; i < 3; i++) {
-        const A = vs[i];
-        const B = vs[(i + 1) % 3];
-
-        let dx = B.x - A.x;
-        let dy = B.y - A.y;
-        let x3 = A.x + dx * cos - dy * sin;
-        let y3 = A.y + dx * sin + dy * cos;
-
-        c.fillStyle = colors[i];
-        triangle(c, A.x, A.y, B.x, B.y, x3, y3, BOTH);
-
-        // Center of side triangle
-        cs[i] = {
-            x: (A.x + B.x + x3) / 3,
-            y: (A.y + B.y + y3) / 3
-        };
-    }
-}
+const render = new Renderer(c);
 
 /**
  * @param {CanvasRenderingContext2D} c 
@@ -55,15 +28,29 @@ const draw = (c) => {
     c.fillStyle = "#ffffff";
     c.fillRect(0, 0, width, height);
 
-    // triangle(c, A.x, A.y, B.x, B.y, C.x, C.y, STROKE);
+    // render.triangle3(A, B, C, STROKE);
 
-    sideTriangle(c);
-    triangle(c, cs[0].x, cs[0].y, cs[1].x, cs[1].y, cs[2].x, cs[2].y, STROKE);
+    const cs = [];
+    for (let i = 0; i < 3; i++) {
+        const A = vs[i];
+        const B = vs[(i + 1) % 3];
+        const C = B.rotate(A, deg);
+
+        c.fillStyle = colors[i];
+        render.triangle3(A, B, C, BOTH);
+
+        cs.push(Triangle.centroid(A, B, C));
+    }
+
+    render.triangle3(cs[0], cs[1], cs[2], STROKE);
+
+    // const t = Triangle.napoleon(A, B, C);
+    // render.triangle(t, STROKE);
 
     // Draw draggable vertices
     c.fillStyle = "#0000ff";
     for (const v of vs) {
-        circle(c, v.x, v.y, r, FILL);
+        render.pt(v, r, FILL);
     }
 }
 draw(c);

@@ -1,4 +1,4 @@
-import { initCanvas, STROKE, rect, randomInt } from "../common.js";
+import { initCanvas, STROKE, randomInt, Renderer } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -27,11 +27,13 @@ let dt = 0.01;  // angular velocity
 let t = 0;      // angle
 let dir = 0;    // direction of sofa
 
+const render = new Renderer(c);
+
 const draw = () => {
     c.save();
     c.fillStyle = "#ffffff";
     c.fillRect(0, 0, width, height);
-    rect(c, w, w, width - 2 * w, height - 2 * w, STROKE);
+    render.rect4(w, w, width - 2 * w, height - 2 * w, STROKE);
     c.translate(x, y);
     c.rotate(t);
 
