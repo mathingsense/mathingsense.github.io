@@ -472,3 +472,54 @@ export class Renderer {
         paint(this.c, mode);
     }
 }
+
+export class Vec2 {
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+/**
+ * @param {Pt} V
+ * @param {Pt} P
+ * @param {Pt} Q
+ * @returns {[Vec2, Vec2]}
+ */
+export const trisect = (V, P, Q) => {
+    const a1 = Math.atan2(P.y - V.y, P.x - V.x);
+    const a2 = Math.atan2(Q.y - V.y, Q.x - V.x);
+    const d = ((a2 - a1 + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+
+    const t1 = a1 + d / 3;
+    const t2 = t1 + d / 3;
+    return [
+        new Vec2(Math.cos(t1), Math.sin(t1)),
+        new Vec2(Math.cos(t2), Math.sin(t2))
+    ];
+}
+
+/**
+ * @param {Pt} V1
+ * @param {Point} d1
+ * @param {Pt} V2
+ * @param {Point} d2
+ * @returns {Pt}
+ */
+export const intersect = (V1, d1, V2, d2) => {
+    /**
+     * @param {Point} u
+     * @param {Point} v
+     * @returns {number}
+     */
+    const cross = (u, v) => u.x * v.y - u.y * v.x;
+    const t = cross({ x: V2.x - V1.x, y: V2.y - V1.y }, d2) / cross(d1, d2);
+    return new Pt(
+        V1.x + t * d1.x,
+        V1.y + t * d1.y
+    );
+}
