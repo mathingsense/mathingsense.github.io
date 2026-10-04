@@ -72,6 +72,31 @@ export const line = (c, x1, y1, x2, y2) => {
 
 /**
  * @param {CanvasRenderingContext2D} c
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} x2
+ * @param {number} y2
+ * @param {number} w
+ * @param {number} h
+ */
+export const extLine = (c, x1, y1, x2, y2, w, h) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+
+    const k = Math.max(w, h) * 2;
+    const startX = x1 - dx * k;
+    const startY = y1 - dy * k;
+    const endX = x2 + dx * k;
+    const endY = y2 + dy * k;
+
+    c.beginPath();
+    c.moveTo(startX, startY);
+    c.lineTo(endX, endY);
+    c.stroke();
+}
+
+/**
+ * @param {CanvasRenderingContext2D} c
  * @param {number} x
  * @param {number} y
  * @param {number} w

@@ -1,4 +1,4 @@
-import { initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, triangle, getPointerPos } from "../common.js";
+import { initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, triangle, getPointerPos, extLine } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -53,7 +53,7 @@ const update = () => {
  * @param {Point} A 
  * @param {Point} B 
  * @param {Point} C 
- * @returns 
+ * @returns {{x: number, y: number, r: number} | null}
  */
 const circumcircle = (A, B, C) => {
     const { x: x1, y: y1 } = A;
@@ -66,7 +66,7 @@ const circumcircle = (A, B, C) => {
         x3 * (y1 - y2)
     );
 
-    if (D < 0.0001) return null;
+    if (Math.abs(D) < 0.001) return null;
 
     const h = (
         (x1 ** 2 + y1 ** 2) * (y2 - y3) +
@@ -152,7 +152,6 @@ const getProjectionPoint = (p, A, B) => {
     const uX = p.x - A.x;
     const uY = p.y - A.y;
     let t = (uX * dx + uY * dy) / line_length_sq;
-    t = Math.max(0, Math.min(1, t));
 
     return {
         x: A.x + t * dx,
@@ -169,6 +168,12 @@ const draw = (c) => {
     c.fillStyle = "#ffffff";
     c.strokeStyle = "#000000";
     c.fillRect(0, 0, width, height);
+
+    c.setLineDash([10, 10]); // [dash length, gap length]
+    extLine(c, A.x, A.y, B.x, B.y, width, height);
+    extLine(c, B.x, B.y, C.x, C.y, width, height);
+    extLine(c, C.x, C.y, A.x, A.y, width, height);
+    c.setLineDash([]);
 
     triangle(c, A.x, A.y, B.x, B.y, C.x, C.y, STROKE);
     c.fillStyle = "#000";
@@ -198,17 +203,19 @@ const draw = (c) => {
         circle(c, m.x, m.y, m.r, BOTH);
     }
 
-    let d = circleIntersections(k, l)
+    if (k && l && m) {
+        let d = circleIntersections(k, l)
 
-    let h = d.points
-    let M
-    if (distance(h[0], ab) > distance(h[1], ab)) {
-        M = h[0]
-    } else {
-        M = h[1];
+        let h = d.points
+        let M
+        if (distance(h[0], ab) > distance(h[1], ab)) {
+            M = h[0]
+        } else {
+            M = h[1];
+        }
+        c.fillStyle = "red"
+        circle(c, M.x, M.y, r, BOTH);
     }
-    c.fillStyle = "red"
-    circle(c, M.x, M.y, r, BOTH);
 }
 draw(c);
 
