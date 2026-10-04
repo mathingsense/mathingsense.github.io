@@ -88,11 +88,11 @@ export const extLine = (c, x1, y1, x2, y2, w, h) => {
     const ux = dx / length;
     const uy = dy / length;
 
-    const extension = Math.max(w, h) * 2;
-    const startX = x1 - ux * extension;
-    const startY = y1 - uy * extension;
-    const endX = x2 + ux * extension;
-    const endY = y2 + uy * extension;
+    const k = 2 * Math.max(w, h);
+    const startX = x1 - ux * k;
+    const startY = y1 - uy * k;
+    const endX   = x2 + ux * k;
+    const endY   = y2 + uy * k;
 
     c.beginPath();
     c.moveTo(startX, startY);
