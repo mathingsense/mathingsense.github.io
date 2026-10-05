@@ -336,6 +336,19 @@ export class P2 {
     }
 }
 
+export class Pm {
+    /**
+     * @param {Lattice} lattice
+     */
+    constructor(lattice) {
+        this.lattice = lattice;
+        this.ops = [
+            [1, 0, 0, 1],
+            [-1, 0, 0, 1],
+        ];
+    }
+}
+
 /**
  * @param {Pt} V
  * @param {Pt} P
