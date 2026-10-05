@@ -470,6 +470,70 @@ export class Renderer {
         this.c.rect(x, y, w, h);
         paint(this.c, mode);
     }
+
+    /**
+     * @param {XY} o
+     * @param {Vec} a
+     * @param {Vec} b
+     */
+    parallelogram(o, a, b) {
+        this.c.beginPath();
+        this.c.moveTo(o.x, o.y);
+        this.c.lineTo(o.x + a.x, o.y + a.y);
+        this.c.lineTo(o.x + a.x + b.x, o.y + a.y + b.y);
+        this.c.lineTo(o.x + b.x, o.y + b.y);
+        this.c.closePath();
+        this.c.stroke();
+    }
+
+    /**
+     * @param {Lattice} L
+     */
+    lattice(L) {
+        for (let m = -10; m <= 10; m++) {
+            for (let n = -10; n <= 10; n++) {
+                const p = L.point(m, n);
+
+                if (p.x >= 0 && p.x <= this.w &&
+                    p.y >= 0 && p.y <= this.h
+                ) {
+                    this.pt2(p.x, p.y, 5, FILL);
+                }
+
+                // Draw cell edges
+                const pa = L.point(m + 1, n);
+                const pb = L.point(m, n + 1);
+
+                this.c.beginPath();
+                this.c.moveTo(p.x, p.y);
+                this.c.lineTo(pa.x, pa.y);
+                this.c.moveTo(p.x, p.y);
+                this.c.lineTo(pb.x, pb.y);
+                this.c.stroke();
+            }
+        }
+    }
+
+    /**
+     * @param {P1} G
+     * @param {*} motif
+     */
+    group(G, motif) {
+        for (let i = -10; i <= 10; i++) {
+            for (let j = -10; j <= 10; j++) {
+                const p = G.lattice.point(i, j);
+
+                for (const [m0, m1, m2, m3] of G.ops) {
+                    this.c.save();
+                    this.c.transform(m0, m1, m2, m3, p.x, p.y);
+                    motif(this.c);
+                    this.c.restore();
+                }
+            }
+        }
+        // Draw lattice for debugging
+        // this.lattice(G.lattice);
+    }
 }
 
 export class Vec {
@@ -480,6 +544,76 @@ export class Vec {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+    }
+
+    /**
+     * @param {Vec} v
+     * @returns {Vec}
+     */
+    add(v) {
+        return new Vec(this.x + v.x, this.y + v.y);
+    }
+
+    /**
+     * @param {Vec} v
+     * @returns {Vec}
+     */
+    sub(v) {
+        return new Vec(this.x - v.x, this.y - v.y);
+    }
+
+    /**
+     * @param {number} s
+     * @returns {Vec}
+     */
+    scale(s) {
+        return new Vec(this.x * s, this.y * s);
+    }
+
+    /**
+     * @param {Vec} v
+     * @returns {Vec}
+     */
+    dot(v) {
+        return new Vec(this.x * v.x, this.y * v.y);
+    }
+
+    length() {
+        return Math.hypot(this.x, this.y);
+    }
+}
+
+export class Lattice {
+    /**
+     * @param {Vec} o
+     * @param {Vec} a
+     * @param {Vec} b
+     */
+    constructor(o, a, b) {
+        this.o = o;
+        this.a = a;
+        this.b = b;
+    }
+
+    /**
+     * @param {number} m
+     * @param {number} n
+     * @returns {Vec}
+     */
+    point(m, n) {
+        return this.o
+            .add(this.a.scale(m))
+            .add(this.b.scale(n));
+    }
+}
+
+export class P1 {
+    /**
+     * @param {Lattice} lattice
+     */
+    constructor(lattice) {
+        this.lattice = lattice;
+        this.ops = [[1, 0, 0, 1]];
     }
 }
 
