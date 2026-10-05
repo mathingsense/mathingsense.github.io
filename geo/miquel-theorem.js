@@ -86,9 +86,9 @@ const draw = (c) => {
     c.fillRect(0, 0, width, height);
 
     c.setLineDash([10, 10]); // [dash length, gap length]
-    render.line2(A, B, width, height);
-    render.line2(B, C, width, height);
-    render.line2(C, A, width, height);
+    render.line2(A, B);
+    render.line2(B, C);
+    render.line2(C, A);
     c.setLineDash([]);
 
     render.triangle3(A, B, C, STROKE);

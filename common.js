@@ -372,39 +372,33 @@ export class Renderer {
     /**
      * @param {Pt} A
      * @param {Pt} B
-     * @param {number} w
-     * @param {number} h
      */
-    line2(A, B, w, h) {
-        this.line4(A.x, A.y, B.x, B.y, w, h);
+    line2(A, B) {
+        this.line4(A.x, A.y, B.x, B.y);
     }
 
     /**
+     * Draws an infinite-looking line, clipped to the canvas.
      * @param {number} x1
      * @param {number} y1
      * @param {number} x2
      * @param {number} y2
-     * @param {number} w
-     * @param {number} h
     */
-    line4(x1, y1, x2, y2, w, h) {
+    line4(x1, y1, x2, y2) {
         const dx = x2 - x1;
         const dy = y2 - y1;
 
-        // Normalize.
         const length = Math.hypot(dx, dy);
+        if (length === 0) return; // Direction is undefined.
+
         const ux = dx / length;
         const uy = dy / length;
 
-        const k = 2 * Math.max(w, h);
-        const startX = x1 - ux * k;
-        const startY = y1 - uy * k;
-        const endX = x2 + ux * k;
-        const endY = y2 + uy * k;
+        const k = Math.hypot(this.w, this.h) + Math.hypot(x1, y1);
 
         this.c.beginPath();
-        this.c.moveTo(startX, startY);
-        this.c.lineTo(endX, endY);
+        this.c.moveTo(x1 - ux * k, y1 - uy * k);
+        this.c.lineTo(x1 + ux * k, y1 + uy * k);
         this.c.stroke();
     }
 
