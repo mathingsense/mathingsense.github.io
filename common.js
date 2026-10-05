@@ -1,6 +1,8 @@
 // Using clockwise convention.
 
-/** Any object with numeric x and y properties (Vec, Pt, plain objects). */
+import { Vec2 } from "./Vec2.js";
+
+/** Any object with numeric x and y properties (Vec2, Pt, plain objects). */
 /** @typedef {{x: number, y: number}} XY */
 
 /**
@@ -47,19 +49,6 @@ export const initCanvas = (id, width, height) => {
 export const distance = (A, B) => {
     return Math.hypot(B.x - A.x, B.y - A.y);
 };
-
-/**
- * @param {CanvasRenderingContext2D} c
- * @param {number} x
- * @param {number} y
- * @param {number} r
- * @param {number} mode
- */
-// export const circle = (c, x, y, r, mode) => {
-//     c.beginPath();
-//     c.arc(x, y, r, 0, TAU);
-//     paint(c, mode);
-// };
 
 /**
  * @param {number} px
@@ -300,58 +289,11 @@ export class Circle {
     }
 }
 
-export class Vec {
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    /**
-     * @param {Vec} v
-     * @returns {Vec}
-     */
-    add(v) {
-        return new Vec(this.x + v.x, this.y + v.y);
-    }
-
-    /**
-     * @param {Vec} v
-     * @returns {Vec}
-     */
-    sub(v) {
-        return new Vec(this.x - v.x, this.y - v.y);
-    }
-
-    /**
-     * @param {number} s
-     * @returns {Vec}
-     */
-    scale(s) {
-        return new Vec(this.x * s, this.y * s);
-    }
-
-    /**
-     * @param {Vec} v
-     * @returns {Vec}
-     */
-    dot(v) {
-        return new Vec(this.x * v.x, this.y * v.y);
-    }
-
-    length() {
-        return Math.hypot(this.x, this.y);
-    }
-}
-
 export class Lattice {
     /**
-     * @param {Vec} o
-     * @param {Vec} a
-     * @param {Vec} b
+     * @param {Vec2} o
+     * @param {Vec2} a
+     * @param {Vec2} b
      */
     constructor(o, a, b) {
         this.o = o;
@@ -362,7 +304,7 @@ export class Lattice {
     /**
      * @param {number} m
      * @param {number} n
-     * @returns {Vec}
+     * @returns {Vec2}
      */
     point(m, n) {
         return this.o
@@ -385,7 +327,7 @@ export class P1 {
  * @param {Pt} V
  * @param {Pt} P
  * @param {Pt} Q
- * @returns {[Vec, Vec]}
+ * @returns {[Vec2, Vec2]}
  */
 export const trisect = (V, P, Q) => {
     const a1 = Math.atan2(P.y - V.y, P.x - V.x);
@@ -395,8 +337,8 @@ export const trisect = (V, P, Q) => {
     const t1 = a1 + d / 3;
     const t2 = t1 + d / 3;
     return [
-        new Vec(Math.cos(t1), Math.sin(t1)),
-        new Vec(Math.cos(t2), Math.sin(t2))
+        new Vec2(Math.cos(t1), Math.sin(t1)),
+        new Vec2(Math.cos(t2), Math.sin(t2))
     ];
 }
 

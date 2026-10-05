@@ -1,4 +1,5 @@
-import { Pt, Triangle, Circle, Vec, Lattice, P1 } from "./common.js";
+import { Pt, Triangle, Circle, Lattice, P1 } from "./common.js";
+import { Vec2 } from "./Vec2.js";
 
 /** @typedef {{x: number, y: number}} XY */
 
@@ -175,8 +176,8 @@ export class Renderer {
 
     /**
      * @param {XY} o
-     * @param {Vec} a
-     * @param {Vec} b
+     * @param {Vec2} a
+     * @param {Vec2} b
      */
     parallelogram(o, a, b) {
         this.c.beginPath();
