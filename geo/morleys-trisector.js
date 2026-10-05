@@ -1,4 +1,5 @@
-import { trisect, intersect, initCanvas, getPointerPos, STROKE, FILL, isInCircle, Renderer, Pt, BOTH } from "../common.js";
+import { trisect, intersect, initCanvas, getPointerPos, isInCircle, Pt } from "../common.js";
+import { Renderer, STROKE, FILL, BOTH } from "../Renderer.js";
 
 const width = 600;
 const height = 600;

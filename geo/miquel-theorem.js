@@ -1,4 +1,5 @@
-import { project, initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, getPointerPos, Pt, Circle, Renderer } from "../common.js";
+import { project, initCanvas, distance, isInCircle, getPointerPos, Pt, Circle } from "../common.js";
+import { Renderer, STROKE, FILL, BOTH } from "../Renderer.js";
 
 const width = 600;
 const height = 600;
@@ -105,7 +106,7 @@ const draw = (c) => {
             M = h[1];
         }
         c.fillStyle = "red"
-        circle(c, M.x, M.y, r, BOTH);
+        render.pt2(M.x, M.y, r, BOTH);
     }
 }
 draw(c);

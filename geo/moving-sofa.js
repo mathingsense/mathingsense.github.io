@@ -1,4 +1,5 @@
-import { initCanvas, STROKE, randomInt, Renderer } from "../common.js";
+import { initCanvas, randomInt } from "../common.js";
+import { Renderer, STROKE } from "../Renderer.js";
 
 const width = 600;
 const height = 600;

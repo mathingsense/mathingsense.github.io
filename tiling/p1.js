@@ -1,4 +1,5 @@
-import { initCanvas, Vec, Renderer, Lattice, P1 } from "../common.js";
+import { initCanvas, Vec, Lattice, P1 } from "../common.js";
+import { Renderer } from "../Renderer.js";
 
 const width = 600;
 const height = 600;

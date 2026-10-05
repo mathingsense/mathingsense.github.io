@@ -1,4 +1,6 @@
-import { getProjectionPt, initCanvas, getPointerPos, STROKE, FILL, isInCircle, Renderer, Pt, Triangle } from "../common.js";
+import { getProjectionPt, initCanvas, getPointerPos, isInCircle, Pt, Triangle } from "../common.js";
+import { Renderer, STROKE, FILL } from "../Renderer.js";
+
 
 const width = 600;
 const height = 600;

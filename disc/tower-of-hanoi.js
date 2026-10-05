@@ -1,4 +1,5 @@
-import { initCanvas, getPointerPos, FILL, BOTH, Renderer } from "../common.js";
+import { initCanvas, getPointerPos } from "../common.js";
+import { Renderer, FILL, BOTH } from "../Renderer.js";
 
 const width = 600;
 const height = 600;
