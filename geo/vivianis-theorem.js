@@ -7,18 +7,21 @@ const [canvas, c] = initCanvas("canvas", width, height);
 
 const colors = ["#f00", "#0f0", "#00f"];
 
-const s = 300
+const s = 400
 const t = Math.sin(Math.PI / 3) * s
 const cy = height / 2
 
 // Vertices of equilateral triangle
 const A = new Pt(250, cy - t / 2);
-const B = new Pt(400, cy + t / 2);
-const C = new Pt(100, cy + t / 2);
+const B = new Pt(450, cy + t / 2);
+const C = new Pt(50, cy + t / 2);
 
 const tri = new Triangle(A, B, C);
 
 const p = new Pt(250, cy);
+let p1 = getProjectionPt(p, A, B);
+let p2 = getProjectionPt(p, B, C);
+let p3 = getProjectionPt(p, C, A);
 
 const r = 10;
 let dragging = false;
@@ -49,10 +52,6 @@ const line2 = (c, A, B, color) => {
     render.seg2(A, B);
 }
 
-let p1 = getProjectionPt(p, A, B);
-let p2 = getProjectionPt(p, B, C);
-let p3 = getProjectionPt(p, C, A);
-
 /**
  * @param {CanvasRenderingContext2D} c 
  */
@@ -64,11 +63,7 @@ const draw = (c) => {
 
     render.triangle3(A, B, C, STROKE);
 
-    // Draw draggable vertices
-    c.fillStyle = "#000";
-    render.pt(p, r, FILL);
-
-    c.lineWidth = 4;
+    c.lineWidth = 6;
 
     line2(c, p, p1, colors[0]);
     line2(c, p, p2, colors[1]);
@@ -83,6 +78,10 @@ const draw = (c) => {
     line(c, x, y, x, y - l1, colors[0]);
     line(c, x, y - l1, x, y - l1 - l2, colors[1]);
     line(c, x, y - l1 - l2, x, y - l1 - l2 - l3, colors[2]);
+
+    // Draw draggable vertices
+    c.fillStyle = "#000";
+    render.pt(p, r, FILL);
 }
 draw(c);
 
