@@ -24,7 +24,7 @@ let dragging = false;
 let type = "corner"
 let t = A
 
-const render = new Renderer(c);
+const render = new Renderer(c, width, height);
 
 /**
  * @param {number} t

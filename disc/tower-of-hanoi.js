@@ -13,7 +13,7 @@ const disk_height = 20;
 let select = 0
 let msg = ""
 
-const render = new Renderer(c);
+const render = new Renderer(c, width, height);
 
 /**
  * @param {CanvasRenderingContext2D} c 

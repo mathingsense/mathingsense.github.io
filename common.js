@@ -1,6 +1,7 @@
 // Using clockwise convention.
 
-/** @typedef {{x: number, y: number}} Point */
+/** Any object with numeric x and y properties (Vec, Pt, plain objects). */
+/** @typedef {{x: number, y: number}} XY */
 
 const TAU = 2 * Math.PI;
 
@@ -41,8 +42,8 @@ export const initCanvas = (id, width, height) => {
 };
 
 /**
- * @param {Point} A
- * @param {Point} B
+ * @param {XY} A
+ * @param {XY} B
  * @returns {number}
  */
 export const distance = (A, B) => {
@@ -167,9 +168,9 @@ export class Triangle {
 
     /**
      * Returns the cross product of vectors (p2 - p1) and (p3 - p1).
-     * @param {Point} p1
-     * @param {Point} p2
-     * @param {Point} p3
+     * @param {XY} p1
+     * @param {XY} p2
+     * @param {XY} p3
      * @returns {number}
      */
     #cross_product(p1, p2, p3) {
@@ -234,9 +235,9 @@ export class Circle {
     }
 
     /**
-     * @param {Point} A
-     * @param {Point} B
-     * @param {Point} C
+     * @param {XY} A
+     * @param {XY} B
+     * @param {XY} C
      * @returns {Circle | null}
      */
     static circumcircle(A, B, C) {
@@ -315,9 +316,13 @@ export class Circle {
 export class Renderer {
     /**
      * @param {CanvasRenderingContext2D} c
+     * @param {number} w
+     * @param {number} h
      */
-    constructor(c) {
+    constructor(c, w, h) {
         this.c = c;
+        this.w = w;
+        this.h = h;
     }
 
     /**
@@ -473,7 +478,7 @@ export class Renderer {
     }
 }
 
-export class Vec2 {
+export class Vec {
     /**
      * @param {number} x
      * @param {number} y
@@ -488,7 +493,7 @@ export class Vec2 {
  * @param {Pt} V
  * @param {Pt} P
  * @param {Pt} Q
- * @returns {[Vec2, Vec2]}
+ * @returns {[Vec, Vec]}
  */
 export const trisect = (V, P, Q) => {
     const a1 = Math.atan2(P.y - V.y, P.x - V.x);
@@ -498,22 +503,22 @@ export const trisect = (V, P, Q) => {
     const t1 = a1 + d / 3;
     const t2 = t1 + d / 3;
     return [
-        new Vec2(Math.cos(t1), Math.sin(t1)),
-        new Vec2(Math.cos(t2), Math.sin(t2))
+        new Vec(Math.cos(t1), Math.sin(t1)),
+        new Vec(Math.cos(t2), Math.sin(t2))
     ];
 }
 
 /**
  * @param {Pt} V1
- * @param {Point} d1
+ * @param {XY} d1
  * @param {Pt} V2
- * @param {Point} d2
+ * @param {XY} d2
  * @returns {Pt}
  */
 export const intersect = (V1, d1, V2, d2) => {
     /**
-     * @param {Point} u
-     * @param {Point} v
+     * @param {XY} u
+     * @param {XY} v
      * @returns {number}
      */
     const cross = (u, v) => u.x * v.y - u.y * v.x;

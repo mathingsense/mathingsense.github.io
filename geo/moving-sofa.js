@@ -27,7 +27,7 @@ let dt = 0.01;  // angular velocity
 let t = 0;      // angle
 let dir = 0;    // direction of sofa
 
-const render = new Renderer(c);
+const render = new Renderer(c, width, height);
 
 const draw = () => {
     c.save();

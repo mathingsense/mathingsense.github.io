@@ -19,7 +19,7 @@ const deg = -Math.PI / 3;
 /** @type {{x: number, y: number} | null} */
 let currentDrag = null;
 
-const render = new Renderer(c);
+const render = new Renderer(c, width, height);
 
 /**
  * @param {CanvasRenderingContext2D} c 

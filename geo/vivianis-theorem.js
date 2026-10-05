@@ -5,8 +5,6 @@ const height = 600;
 
 const [canvas, c] = initCanvas("canvas", width, height);
 
-/** @typedef {{x: number, y: number}} Point */
-
 const colors = ["#f00", "#0f0", "#00f"];
 
 const s = 300
@@ -25,7 +23,7 @@ const p = new Pt(250, cy);
 const r = 10;
 let dragging = false;
 
-const render = new Renderer(c);
+const render = new Renderer(c, width, height);
 
 /**
  * @param {CanvasRenderingContext2D} c
