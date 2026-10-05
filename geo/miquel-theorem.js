@@ -1,4 +1,4 @@
-import { initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, getPointerPos, Pt, Circle, Renderer } from "../common.js";
+import { project, initCanvas, STROKE, FILL, BOTH, distance, isInCircle, circle, getPointerPos, Pt, Circle, Renderer } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -49,31 +49,6 @@ const update = () => {
     bc = updateSidePoint(bc.t, B, C);
     ca = updateSidePoint(ca.t, C, A);
     abc = [ab, bc, ca];
-}
-
-/**
- * @param {Point} p 
- * @param {Point} A 
- * @param {Point} B 
- * @returns {{x: number, y: number, t: number} | null}
- */
-const getProjectionPoint = (p, A, B) => {
-    const dx = B.x - A.x;
-    const dy = B.y - A.y;
-
-    const line_length_sq = dx * dx + dy * dy;
-    if (line_length_sq === 0) return null;
-
-    // Calculate the projection scalar t.
-    const uX = p.x - A.x;
-    const uY = p.y - A.y;
-    let t = (uX * dx + uY * dy) / line_length_sq;
-
-    return {
-        x: A.x + t * dx,
-        y: A.y + t * dy,
-        t: t
-    }
 }
 
 /**
@@ -172,12 +147,10 @@ const pointerMove = (e) => {
             t.y = y;
             update();
         } else {
-            const p = getProjectionPoint({ x, y }, g.A, g.B)
-            if (p) {
-                g.x = p.x;
-                g.y = p.y;
-                g.t = p.t;
-            }
+            const p = project({ x, y }, g.A, g.B)
+            g.x = p.x;
+            g.y = p.y;
+            g.t = p.t;
         }
 
         draw(c);

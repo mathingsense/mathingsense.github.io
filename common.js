@@ -522,3 +522,42 @@ export const intersect = (V1, d1, V2, d2) => {
         V1.y + t * d1.y
     );
 }
+
+/**
+ * @param {XY} p
+ * @param {XY} A
+ * @param {XY} B
+ * @param {boolean} [clamp=false]
+ * @returns {{x: number, y: number, t: number}}
+ */
+export const project = (p, A, B, clamp = false) => {
+    const dx = B.x - A.x;
+    const dy = B.y - A.y;
+
+    const lengthSq = dx * dx + dy * dy;
+    if (lengthSq < 0.0001) {
+        return { x: A.x, y: A.y, t: 0 };
+    }
+
+    let t = ((p.x - A.x) * dx + (p.y - A.y) * dy) / lengthSq;
+    if (clamp) {
+        t = Math.max(0, Math.min(1, t));
+    }
+
+    return {
+        x: A.x + t * dx,
+        y: A.y + t * dy,
+        t,
+    };
+};
+
+/**
+ * @param {XY} p
+ * @param {XY} A
+ * @param {XY} B
+ * @returns {Pt}
+ */
+export const getProjectionPt = (p, A, B) => {
+    const r = project(p, A, B);
+    return new Pt(r.x, r.y);
+}

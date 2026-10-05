@@ -1,4 +1,4 @@
-import { initCanvas, getPointerPos, STROKE, FILL, isInCircle, Renderer, Pt, Triangle } from "../common.js";
+import { getProjectionPt, initCanvas, getPointerPos, STROKE, FILL, isInCircle, Renderer, Pt, Triangle } from "../common.js";
 
 const width = 600;
 const height = 600;
@@ -49,34 +49,9 @@ const line2 = (c, A, B, color) => {
     render.seg2(A, B);
 }
 
-/**
- * Returns the projection point of a given point onto a line segment defined by two endpoints.
- * @param {Pt} p
- * @param {Pt} A
- * @param {Pt} B
- * @returns {Pt}
- */
-const get_projection_point = (p, A, B) => {
-    const dx = B.x - A.x;
-    const dy = B.y - A.y;
-
-    const line_length_sq = dx * dx + dy * dy;
-    if (line_length_sq === 0) return A;
-
-    // Calculate the projection scalar t.
-    const uX = p.x - A.x;
-    const uY = p.y - A.y;
-    const t = (uX * dx + uY * dy) / line_length_sq;
-
-    return new Pt(
-        A.x + t * dx,
-        A.y + t * dy
-    );
-}
-
-let p1 = get_projection_point(p, A, B);
-let p2 = get_projection_point(p, B, C);
-let p3 = get_projection_point(p, C, A);
+let p1 = getProjectionPt(p, A, B);
+let p2 = getProjectionPt(p, B, C);
+let p3 = getProjectionPt(p, C, A);
 
 /**
  * @param {CanvasRenderingContext2D} c 
@@ -137,9 +112,9 @@ const pointerMove = (e) => {
         p.x = x;
         p.y = y;
 
-        p1 = get_projection_point(p, A, B);
-        p2 = get_projection_point(p, B, C);
-        p3 = get_projection_point(p, C, A);
+        p1 = getProjectionPt(p, A, B);
+        p2 = getProjectionPt(p, B, C);
+        p3 = getProjectionPt(p, C, A);
         draw(c);
     }
 }
