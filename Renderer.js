@@ -190,29 +190,45 @@ export class Renderer {
     }
 
     /**
+     * Integer lattice-index bounds covering the visible canvas
+     * @param {Lattice} L
+     * @param {number} pad
+     * @returns {*}
+     */
+    #tileRange(L, pad = 1) {
+        const corners = [[0, 0], [this.w, 0], [0, this.h], [this.w, this.h]].map(([px, py]) =>
+            L.fractional(px, py));
+        const us = corners.map(c => c[0]);
+        const vs = corners.map(c => c[1]);
+        return {
+            i0: Math.floor(Math.min(...us)) - pad,
+            i1: Math.ceil(Math.max(...us)) + pad,
+            j0: Math.floor(Math.min(...vs)) - pad,
+            j1: Math.ceil(Math.max(...vs)) + pad,
+        };
+    }
+
+    /**
      * @param {Lattice} L
      */
     lattice(L) {
-        for (let m = -10; m <= 10; m++) {
-            for (let n = -10; n <= 10; n++) {
-                const p = L.point(m, n);
+        const { i0, i1, j0, j1 } = this.#tileRange(L);
 
-                if (p.x >= 0 && p.x <= this.w &&
-                    p.y >= 0 && p.y <= this.h
-                ) {
-                    this.pt2(p.x, p.y, 5, FILL);
-                }
+        this.c.beginPath();
+        for (let i = i0; i <= i1; i++) {
+            this.c.moveTo(...L.point(i, j0));
+            this.c.lineTo(...L.point(i, j1));
+        }
+        for (let j = j0; j <= j1; j++) {
+            this.c.moveTo(...L.point(i0, j));
+            this.c.lineTo(...L.point(i1, j));
+        }
+        this.c.stroke();
 
-                // Draw cell edges
-                const pa = L.point(m + 1, n);
-                const pb = L.point(m, n + 1);
-
-                this.c.beginPath();
-                this.c.moveTo(p.x, p.y);
-                this.c.lineTo(pa.x, pa.y);
-                this.c.moveTo(p.x, p.y);
-                this.c.lineTo(pb.x, pb.y);
-                this.c.stroke();
+        for (let i = i0; i <= i1; i++) {
+            for (let j = j0; j <= j1; j++) {
+                const p = L.point(i, j);
+                this.pt2(p[0], p[1], 5, FILL);
             }
         }
     }
@@ -228,7 +244,7 @@ export class Renderer {
 
                 for (const [m0, m1, m2, m3] of G.ops) {
                     this.c.save();
-                    this.c.transform(m0, m1, m2, m3, p.x, p.y);
+                    this.c.transform(m0, m1, m2, m3, p[0], p[1]);
                     motif(this.c);
                     this.c.restore();
                 }

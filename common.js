@@ -289,27 +289,71 @@ export class Circle {
     }
 }
 
+/** @typedef {[number, number, number, number, number, number]} TransformMatrix */
+
+/**
+ * @param {TransformMatrix} P
+ * @returns {TransformMatrix}
+ */
+function inv(P) {
+    const det = P[0] * P[3] - P[1] * P[2];
+    const a = P[3] / det, b = -P[1] / det, c = -P[2] / det, d = P[0] / det;
+    return [a, b, c, d, -(a * P[4] + c * P[5]), -(b * P[4] + d * P[5])];
+}
+
 export class Lattice {
     /**
-     * @param {Vec2} o
-     * @param {Vec2} a
-     * @param {Vec2} b
+     * @param {number} ax
+     * @param {number} ay
+     * @param {number} bx
+     * @param {number} by
+     * @param {string} type
      */
-    constructor(o, a, b) {
-        this.o = o;
-        this.a = a;
-        this.b = b;
+    constructor(ax, ay, bx, by, type = "oblique") {
+        this.type = type;
+        /** @type {TransformMatrix} */
+        this.m = [ax, ay, bx, by, 0, 0];
+        this.inv = inv(this.m);
     }
 
     /**
-     * @param {number} m
-     * @param {number} n
-     * @returns {Vec2}
+     * @param {number} a
+     * @param {number} b
+     * @param {number} deg
+     * @returns {Lattice}
      */
-    point(m, n) {
-        return this.o
-            .add(this.a.scale(m))
-            .add(this.b.scale(n));
+    static oblique(a, b, deg) {
+        const g = deg * Math.PI / 180;
+        return new Lattice(a, 0, b * Math.cos(g), b * Math.sin(g), "oblique");
+    }
+
+    /**
+     * @param {number} a
+     * @param {number} b
+     * @returns {Lattice}
+     */
+    static rectangular(a, b) {
+        return new Lattice(a, 0, 0, b, 'rectangular');
+    }
+
+    /**
+     * Fractional (u,v) -> Cartesian [x,y]
+     * @param {number} u
+     * @param {number} v
+     * @returns {[number, number]}
+     */
+    point(u, v) {
+        return [this.m[0] * u + this.m[2] * v, this.m[1] * u + this.m[3] * v];
+    }
+
+    /**
+     * Cartesian (x,y) -> fractional [u,v]
+     * @param {number} x
+     * @param {number} y
+     * @returns {[number, number]}
+     */
+    fractional(x, y) {
+        return [this.inv[0] * x + this.inv[2] * y, this.inv[1] * x + this.inv[3] * y];
     }
 }
 
@@ -338,6 +382,7 @@ export class P2 {
 
 export class Pm {
     /**
+     * @todo validate the lattice type
      * @param {Lattice} lattice
      */
     constructor(lattice) {
