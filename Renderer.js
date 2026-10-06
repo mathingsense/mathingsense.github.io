@@ -1,4 +1,4 @@
-import { Pt, Triangle, Circle, Lattice, P1 } from "./common.js";
+import { Pt, Triangle, Circle, Lattice, P1, mul, cartesianOps } from "./common.js";
 import { Vec2 } from "./Vec2.js";
 
 /** @typedef {{x: number, y: number}} XY */
@@ -238,13 +238,14 @@ export class Renderer {
      * @param {*} motif
      */
     group(G, motif) {
+        const ops = cartesianOps(G.ops, G.lattice);
         for (let i = -10; i <= 10; i++) {
             for (let j = -10; j <= 10; j++) {
-                const p = G.lattice.point(i, j);
+                const t = G.lattice.translation(i, j);
 
-                for (const [m0, m1, m2, m3] of G.ops) {
+                for (const m of ops) {
                     this.c.save();
-                    this.c.transform(m0, m1, m2, m3, p[0], p[1]);
+                    this.c.transform(...mul(t, m));
                     motif(this.c);
                     this.c.restore();
                 }
