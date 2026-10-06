@@ -1,4 +1,5 @@
-import { initCanvas, Lattice, P1 } from "../common.js";
+import { initCanvas } from "../common.js";
+import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
 import { Renderer } from "../Renderer.js";
 
 const width = 600;
@@ -7,7 +8,7 @@ const height = 600;
 const [_, c] = initCanvas("canvas", width, height);
 
 const lattice = Lattice.oblique(120, 107, 69);
-const group = new P1(lattice);
+const group = new WallpaperGroup("p1", lattice);
 
 const render = new Renderer(c, width, height);
 

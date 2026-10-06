@@ -1,4 +1,5 @@
-import { initCanvas, Lattice, WallpaperGroup } from "../common.js";
+import { initCanvas } from "../common.js";
+import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
 import { BOTH, Renderer } from "../Renderer.js";
 
 const width = 600;

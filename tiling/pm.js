@@ -1,4 +1,5 @@
-import { initCanvas, Lattice, Pm } from "../common.js";
+import { initCanvas } from "../common.js";
+import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
 import { Renderer } from "../Renderer.js";
 
 const width = 600;
@@ -9,7 +10,7 @@ const [_, c] = initCanvas("canvas", width, height);
 const render = new Renderer(c, width, height);
 
 const lattice = Lattice.rectangular(120, 100);
-const group = new Pm(lattice);
+const group = new WallpaperGroup("pm", lattice);
 
 /**
  * An asymmetric shape, drawn near the origin (0,0).

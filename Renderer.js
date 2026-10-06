@@ -1,5 +1,6 @@
-import { Pt, Triangle, Circle, Lattice, P1, mul, cartesianOps } from "./common.js";
+import { Pt, Triangle, Circle } from "./common.js";
 import { Vec2 } from "./Vec2.js";
+import { Lattice, WallpaperGroup, mul, cartesianOps } from "./WallpaperGroup.js";
 
 /** @typedef {{x: number, y: number}} XY */
 
@@ -234,7 +235,7 @@ export class Renderer {
     }
 
     /**
-     * @param {P1} G
+     * @param {WallpaperGroup} G
      * @param {*} motif
      */
     group(G, motif) {
