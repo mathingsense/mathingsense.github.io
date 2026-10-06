@@ -95,19 +95,17 @@ export class Lattice {
 }
 
 
-const ID     = [1, 0, 0, 1, 0, 0];
+const I      = [1, 0, 0, 1, 0, 0];
 const R2     = [-1, 0, 0, -1, 0, 0];   // 2-fold rotation (x,y)->(-x,-y)
 const M_X    = [-1, 0, 0, 1, 0, 0];    // mirror (x,y)->(-x, y)
 
-/** @type {Record<string, {lattice: string, gens: any}>} */
-const WG = {
-    // ---------- Oblique: a, b, angle ----------
-    p1:   { lattice: 'oblique',     gens: [ID] },
-    p2:   { lattice: 'oblique',     gens: [ID, R2] },
-
-    // ---------- Rectangular: a ⟂ b ----------
-    pm:   { lattice: 'rectangular', gens: [ID, M_X] },
-    pg:   { lattice: 'rectangular', gens: [ID, [-1, 0, 0, 1, 0, 0.5]] },            // glide along b
+/** @type {Record<string, any[]>} */
+const OPS = {
+    p1: [I],
+    p2: [I, R2],
+    pm: [I, M_X],
+    pg: [I, [-1, 0, 0, 1, 0, 0.5]],
+    pmm: [I, R2, M_X, [1, 0, 0, -1, 0, 0]],
 };
 
 export class WallpaperGroup {
@@ -117,11 +115,11 @@ export class WallpaperGroup {
      */
     constructor(name, lattice) {
         this.lattice = lattice;
-        const g = WG[name];
-        if (g === undefined) {
+        const ops = OPS[name];
+        if (ops === undefined) {
             throw new Error(`unknown wallpaper group: ${name}`);
         }
-        this.ops = g.gens;
+        this.ops = ops;
     }
 }
 
