@@ -253,6 +253,6 @@ export class Renderer {
             }
         }
         // Draw lattice for debugging
-        this.lattice(G.lattice);
+        // this.lattice(G.lattice);
     }
 }

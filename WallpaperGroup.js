@@ -106,6 +106,7 @@ const OPS = {
     pm: [I, M_X],
     pg: [I, [-1, 0, 0, 1, 0, 0.5]],
     pmm: [I, R2, M_X, [1, 0, 0, -1, 0, 0]],
+    pmg: [I, M_X, [-1, 0, 0, -1, 0.5, 0], [1, 0, 0, -1, 0.5, 0]],
 };
 
 export class WallpaperGroup {
