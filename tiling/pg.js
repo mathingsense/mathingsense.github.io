@@ -1,6 +1,6 @@
 import { initCanvas } from "../common.js";
 import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
-import { BOTH, Renderer } from "../Renderer.js";
+import { FILL, Renderer } from "../Renderer.js";
 
 const width = 600;
 const height = 600;
@@ -18,7 +18,7 @@ const group = new WallpaperGroup("pg", lattice);
  */
 const motif = (c) => {
     c.fillStyle = '#00f';
-    render.triangle6(40, 10, 110, 10, 110, 40, BOTH);
+    render.triangle6(40, 10, 110, 10, 110, 40, FILL);
 }
 
 /**
