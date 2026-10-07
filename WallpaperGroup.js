@@ -63,6 +63,14 @@ export class Lattice {
     }
 
     /**
+     * @param {number} a
+     * @returns {Lattice}
+     */
+    static square(a) {
+        return new Lattice(a, 0, 0, a, "square");
+    }
+
+    /**
      * Fractional (u,v) -> Cartesian [x,y]
      * @param {number} u
      * @param {number} v
@@ -97,6 +105,7 @@ export class Lattice {
 
 const I = [1, 0, 0, 1, 0, 0];
 const R2 = [-1, 0, 0, -1, 0, 0];    // 2-fold rotation (x, y) -> (-x, -y)
+const R4 = [0, 1, -1, 0, 0, 0];     // 4-fold rotation (x, y) -> (-y, x)     [square lattice]
 const M_X = [-1, 0, 0, 1, 0, 0];    // mirror (x, y) -> (-x, y)
 const M_Y = [1, 0, 0, -1, 0, 0];    // mirror (x, y) -> (x, -y)
 const CR = [1, 0, 0, 1, 0.5, 0.5];  // centering translation (x, y) -> (x + 1/2, y + 1/2)
@@ -152,6 +161,12 @@ const OPS = {
         [-1, 0, 0, 1, 0.5, 0.5],  // CR M_X
         [1, 0, 0, -1, 0.5, 0.5],  // CR M_Y
     ],
+    p4: [
+        I,
+        R4,
+        R2,
+        [0, -1, 1, 0, 0, 0],
+    ]
 };
 
 export class WallpaperGroup {
