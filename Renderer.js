@@ -163,6 +163,19 @@ export class Renderer {
     }
 
     /**
+     * @todo merge this with pt2
+     * @param {number} x
+     * @param {number} y
+     * @param {number} r
+     * @param {number} mode
+     */
+    circle2(x, y, r, mode) {
+        this.c.beginPath();
+        this.c.arc(x, y, r, 0, TAU);
+        paint(this.c, mode);
+    };
+
+    /**
      * @param {number} x
      * @param {number} y
      * @param {number} w
