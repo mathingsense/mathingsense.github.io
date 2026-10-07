@@ -9,3 +9,8 @@ canvas {
     display: block;
     border: 1px solid black;
 }
+
+#error {
+    margin-top: 10px;
+    color: red;
+}

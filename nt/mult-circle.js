@@ -13,8 +13,15 @@ const error = getElement("error", HTMLDivElement);
 
 const render = new Renderer(c, width, height);
 
-let k = 5;
-let n = 80;
+let n = 200;
+let k = 6;
+
+// Note: this is necessary because browser retains the previous input values
+//       when the page is reloaded
+// TODO: create a helper
+nInput.value = n.toString();
+kInput.value = k.toString();
+
 const r = 250;
 const cx = 300;
 const cy = 300;
@@ -45,13 +52,14 @@ const update = () => {
     draw();
 }
 
+// TODO: generalize and separate check for each input
 const validate = () => {
     const n = Number(nInput.value);
     const k = Number(kInput.value);
     let msg = "";
 
-    if (!Number.isInteger(n) || n < 20 || n > 100) {
-        msg = "n must be an integer between 20 and 100.";
+    if (!Number.isInteger(n) || n < 20 || n > 200) {
+        msg = "n must be an integer between 20 and 200.";
     } else if (!Number.isInteger(k) || k < 2 || k > 20) {
         msg = "k must be an integer between 2 and 20.";
     }
