@@ -33,15 +33,8 @@ export const initCanvas = (id, width, height) => {
         throw new RangeError('width and height must be positive');
     }
 
-    const el = document.getElementById(id);
-    if (el === null) {
-        throw new Error(`element #${id} not found`);
-    }
-    if (!(el instanceof HTMLCanvasElement)) {
-        throw new Error(`element #${id} is not a <canvas>`);
-    }
-
-    const ctx = el.getContext("2d");
+    const canvas = getElement(id, HTMLCanvasElement);
+    const ctx = canvas.getContext("2d");
     if (ctx === null) {
         throw new Error(`could not get a 2D context for #${id}`);
     }
@@ -49,13 +42,13 @@ export const initCanvas = (id, width, height) => {
     // Sizes the canvas for crisp rendering on HiDPI displays.
     const dpr = window.devicePixelRatio || 1;
 
-    el.style.width = `${width}px`;
-    el.style.height = `${height}px`;
-    el.width = Math.round(width * dpr);
-    el.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
 
-    ctx.setTransform(el.width / width, 0, 0, el.height / height, 0, 0);
-    return [el, ctx];
+    ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+    return [canvas, ctx];
 };
 
 /**
