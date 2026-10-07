@@ -104,10 +104,11 @@ export class Lattice {
 
 
 const I = [1, 0, 0, 1, 0, 0];
-const R2 = [-1, 0, 0, -1, 0, 0];    // 2-fold rotation (x, y) -> (-x, -y)
-const R4 = [0, 1, -1, 0, 0, 0];     // 4-fold rotation (x, y) -> (-y, x)     [square lattice]
-const M_X = [-1, 0, 0, 1, 0, 0];    // mirror (x, y) -> (-x, y)
-const M_Y = [1, 0, 0, -1, 0, 0];    // mirror (x, y) -> (x, -y)
+const R90 = [0, 1, -1, 0, 0, 0];    // 4-fold rotation (x, y) -> (-y, x) [square lattice]
+const R180 = [-1, 0, 0, -1, 0, 0];  // 2-fold rotation (x, y) -> (-x, -y)
+const R270 = [0, -1, 1, 0, 0, 0];   // (x, y) -> (y, -x) [square lattice]
+const Mx = [-1, 0, 0, 1, 0, 0];     // mirror (x, y) -> (-x, y)
+const My = [1, 0, 0, -1, 0, 0];     // mirror (x, y) -> (x, -y)
 const CR = [1, 0, 0, 1, 0.5, 0.5];  // centering translation (x, y) -> (x + 1/2, y + 1/2)
 
 /** @type {Record<string, any[]>} */
@@ -117,11 +118,11 @@ const OPS = {
     ],
     p2: [
         I,
-        R2,
+        R180,
     ],
     pm: [
         I,
-        M_X,
+        Mx,
     ],
     pg: [
         I,
@@ -129,33 +130,33 @@ const OPS = {
     ],
     pmm: [
         I,
-        R2,
-        M_X,
-        M_Y,
+        R180,
+        Mx,
+        My,
     ],
     pmg: [
         I,
-        M_X,
+        Mx,
         [-1, 0, 0, -1, 0.5, 0],
         [1, 0, 0, -1, 0.5, 0],
     ],
     pgg: [
         I,
-        R2,
+        R180,
         [-1, 0, 0, 1, 0.5, 0.5],
         [1, 0, 0, -1, -0.5, -0.5],
     ],
     cm: [
         I,
-        M_X,
+        Mx,
         CR,
         [-1, 0, 0, 1, 0.5, 0.5], // CR M_X
     ],
     cmm: [
         I,
-        R2,
-        M_X,
-        M_Y,
+        R180,
+        Mx,
+        My,
         CR,
         [-1, 0, 0, -1, 0.5, 0.5], // CR R2
         [-1, 0, 0, 1, 0.5, 0.5],  // CR M_X
@@ -163,17 +164,17 @@ const OPS = {
     ],
     p4: [
         I,
-        R4,
-        R2,
-        [0, -1, 1, 0, 0, 0],
+        R90,
+        R180,
+        R270,
     ],
     p4m: [
         I,
-        [0, -1, 1, 0, 0, 0],   // (x, y) -> (y, -x)
-        R2,
-        R4,
-        M_X,
-        M_Y,
+        R90,
+        R270,
+        R180,
+        Mx,
+        My,
         [0, 1, 1, 0, 0, 0],    // (x, y) -> (y, x)
         [0, -1, -1, 0, 0, 0],  // (x, y) -> (-y, -x)
     ],
