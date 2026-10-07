@@ -1,16 +1,16 @@
 import { Pt, Triangle, Circle } from "./common.js";
-import { Vec2 } from "./Vec2.js";
 import { Lattice, WallpaperGroup, mul, cartesianOps } from "./WallpaperGroup.js";
 
 /** @typedef {{x: number, y: number}} XY */
 
 const TAU = 2 * Math.PI;
 
+/** @typedef {1 | 2 | 3} Mode */
 export const STROKE = 1, FILL = 2, BOTH = 3;
 
 /**
  * @param {CanvasRenderingContext2D} c
- * @param {*} mode
+ * @param {Mode} mode
  */
 const paint = (c, mode) => {
     if (mode & FILL) c.fill();
@@ -32,25 +32,41 @@ export class Renderer {
     /**
      * @param {Pt} P
      * @param {number} r
-     * @param {number} mode
+     * @param {Mode} mode
      */
     pt(P, r, mode) {
-        this.c.beginPath();
-        this.c.arc(P.x, P.y, r, 0, TAU);
-        paint(this.c, mode);
-    };
+        this.circle2(P.x, P.y, r, mode);
+    }
 
     /**
      * @param {number} x
      * @param {number} y
      * @param {number} r
-     * @param {number} mode
+     * @param {Mode} mode
      */
     pt2(x, y, r, mode) {
+        this.circle2(x, y, r, mode);
+    }
+
+    /**
+     * @param {Circle} C
+     * @param {Mode} mode
+     */
+    circle(C, mode) {
+        this.circle2(C.x, C.y, C.r, mode);
+    }
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} r
+     * @param {Mode} mode
+     */
+    circle2(x, y, r, mode) {
         this.c.beginPath();
         this.c.arc(x, y, r, 0, TAU);
         paint(this.c, mode);
-    };
+    }
 
     /**
      * @param {Pt} A
@@ -108,7 +124,7 @@ export class Renderer {
 
     /**
      * @param {Triangle} T
-     * @param {number} mode
+     * @param {Mode} mode
      */
     triangle(T, mode) {
         this.triangle6(
@@ -123,7 +139,7 @@ export class Renderer {
      * @param {Pt} A
      * @param {Pt} B
      * @param {Pt} C
-     * @param {number} mode
+     * @param {Mode} mode
      */
     triangle3(A, B, C, mode) {
         this.triangle6(
@@ -141,7 +157,7 @@ export class Renderer {
      * @param {number} y2
      * @param {number} x3
      * @param {number} y3
-     * @param {number} mode
+     * @param {Mode} mode
      */
     triangle6(x1, y1, x2, y2, x3, y3, mode) {
         this.c.beginPath();
@@ -150,57 +166,19 @@ export class Renderer {
         this.c.lineTo(x3, y3);
         this.c.closePath();
         paint(this.c, mode);
-    };
-
-    /**
-     * @param {Circle} C
-     * @param {number} mode
-     */
-    circle(C, mode) {
-        this.c.beginPath();
-        this.c.arc(C.x, C.y, C.r, 0, TAU);
-        paint(this.c, mode);
     }
-
-    /**
-     * @todo merge this with pt2
-     * @param {number} x
-     * @param {number} y
-     * @param {number} r
-     * @param {number} mode
-     */
-    circle2(x, y, r, mode) {
-        this.c.beginPath();
-        this.c.arc(x, y, r, 0, TAU);
-        paint(this.c, mode);
-    };
 
     /**
      * @param {number} x
      * @param {number} y
      * @param {number} w
      * @param {number} h
-     * @param {number} mode
+     * @param {Mode} mode
      */
     rect4(x, y, w, h, mode) {
         this.c.beginPath();
         this.c.rect(x, y, w, h);
         paint(this.c, mode);
-    }
-
-    /**
-     * @param {XY} o
-     * @param {Vec2} a
-     * @param {Vec2} b
-     */
-    parallelogram(o, a, b) {
-        this.c.beginPath();
-        this.c.moveTo(o.x, o.y);
-        this.c.lineTo(o.x + a.x, o.y + a.y);
-        this.c.lineTo(o.x + a.x + b.x, o.y + a.y + b.y);
-        this.c.lineTo(o.x + b.x, o.y + b.y);
-        this.c.closePath();
-        this.c.stroke();
     }
 
     /**
@@ -252,9 +230,11 @@ export class Renderer {
      * @param {*} motif
      */
     group(G, motif) {
+        const { i0, i1, j0, j1 } = this.#tileRange(G.lattice);
         const ops = cartesianOps(G.ops, G.lattice);
-        for (let i = -10; i <= 10; i++) {
-            for (let j = -10; j <= 10; j++) {
+
+        for (let i = i0; i <= i1; i++) {
+            for (let j = j0; j <= j1; j++) {
                 const t = G.lattice.translation(i, j);
 
                 for (const m of ops) {
