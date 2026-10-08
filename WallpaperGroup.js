@@ -115,11 +115,15 @@ const I = [1, 0, 0, 1, 0, 0];
 const R90 = [0, 1, -1, 0, 0, 0];    // 4-fold rotation (x, y) -> (-y, x) [square lattice]
 const R180 = [-1, 0, 0, -1, 0, 0];  // 2-fold rotation (x, y) -> (-x, -y)
 const R270 = [0, -1, 1, 0, 0, 0];   // (x, y) -> (y, -x) [square lattice]
-const Mx = [-1, 0, 0, 1, 0, 0];     // mirror (x, y) -> (-x, y)
-const My = [1, 0, 0, -1, 0, 0];     // mirror (x, y) -> (x, -y)
-const CR = [1, 0, 0, 1, 0.5, 0.5];  // centering translation (x, y) -> (x + 1/2, y + 1/2)
+
 const R120 = [0, 1, -1, -1, 0, 0];  // 3-fold rotation (x, y)->(-y, x-y) [hex lattice]
 const R240 = [-1, -1, 1, 0, 0, 0];  // (x, y) -> (y-x, -x)
+
+const Mx = [-1, 0, 0, 1, 0, 0];     // mirror (x, y) -> (-x, y)
+const My = [1, 0, 0, -1, 0, 0];     // mirror (x, y) -> (x, -y)
+const Manti = [0, -1, -1, 0, 0, 0]; // mirror (x, y) -> (-y, -x) [hex lattice]
+
+const CR = [1, 0, 0, 1, 0.5, 0.5];  // centering translation (x, y) -> (x + 1/2, y + 1/2)
 
 /** @type {Record<string, any[]>} */
 const OPS = {
@@ -203,6 +207,14 @@ const OPS = {
         R120,
         R240,
     ],
+    p3m1: [
+        I,
+        R120,
+        R240,
+        Manti,
+        [-1, 0, 1, 1, 0, 0],
+        [1, 1, 0, -1, 0, 0],
+    ]
 };
 
 export class WallpaperGroup {
