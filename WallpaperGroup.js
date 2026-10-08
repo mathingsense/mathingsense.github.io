@@ -71,6 +71,14 @@ export class Lattice {
     }
 
     /**
+     * @param {number} a
+     * @returns {Lattice}
+     */
+    static hexagonal(a) {
+        return new Lattice(a, 0, -a / 2, a * Math.sqrt(3) / 2, "hexagonal");
+    }
+
+    /**
      * Fractional (u,v) -> Cartesian [x,y]
      * @param {number} u
      * @param {number} v
@@ -110,6 +118,8 @@ const R270 = [0, -1, 1, 0, 0, 0];   // (x, y) -> (y, -x) [square lattice]
 const Mx = [-1, 0, 0, 1, 0, 0];     // mirror (x, y) -> (-x, y)
 const My = [1, 0, 0, -1, 0, 0];     // mirror (x, y) -> (x, -y)
 const CR = [1, 0, 0, 1, 0.5, 0.5];  // centering translation (x, y) -> (x + 1/2, y + 1/2)
+const R120 = [0, 1, -1, -1, 0, 0];  // 3-fold rotation (x, y)->(-y, x-y) [hex lattice]
+const R240 = [-1, -1, 1, 0, 0, 0];  // (x, y) -> (y-x, -x)
 
 /** @type {Record<string, any[]>} */
 const OPS = {
@@ -187,7 +197,12 @@ const OPS = {
         [0, -1, -1, 0, 0.5, 0.5],  // (x, y) -> (-y + 0.5, -x + 0.5)
         [1, 0, 0, -1, 0.5, 0.5],   // (x, y) -> (x + 0.5, -y + 0.5)
         [-1, 0, 0, 1, 0.5, 0.5],   // (x, y) -> (-x + 0.5, y + 0.5)
-    ]
+    ],
+    p3: [
+        I,
+        R120,
+        R240,
+    ],
 };
 
 export class WallpaperGroup {
