@@ -116,7 +116,7 @@ const R90 = [0, 1, -1, 0, 0, 0];    // 4-fold rotation (x, y) -> (-y, x) [square
 const R180 = [-1, 0, 0, -1, 0, 0];  // 2-fold rotation (x, y) -> (-x, -y)
 const R270 = [0, -1, 1, 0, 0, 0];   // (x, y) -> (y, -x) [square lattice]
 
-const R60  = [1, 1, -1, 0, 0, 0];   // 6-fold rotation (x, y) -> (x-y, x) [hex lattice]
+const R60 = [1, 1, -1, 0, 0, 0];    // 6-fold rotation (x, y) -> (x-y, x) [hex lattice]
 const R120 = [0, 1, -1, -1, 0, 0];  // 3-fold rotation (x, y)->(-y, x-y) [hex lattice]
 const R240 = [-1, -1, 1, 0, 0, 0];  // (x, y) -> (y-x, -x)
 
@@ -232,6 +232,20 @@ const OPS = {
         R180,
         R240,
         [0, -1, 1, 1, 0, 0],  // R300
+    ],
+    p6m: [
+        I,
+        R60,
+        R120,
+        R180,
+        R240,
+        [0, -1, 1, 1, 0, 0],  // R300
+        Mdiag,
+        Manti,
+        [1, 1, 0, -1, 0, 0],
+        [-1, 0, 1, 1, 0, 0],
+        [1, 0, -1, -1, 0, 0],
+        [-1, -1, 0, 1, 0, 0],
     ],
 };
 
