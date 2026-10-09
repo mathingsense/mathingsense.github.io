@@ -294,6 +294,7 @@ const SUBLATTICES = {
 
 export class WallpaperGroup {
     /**
+     * @todo delete this later
      * @param {string} name
      * @param {Lattice} lattice
      */
@@ -316,6 +317,39 @@ export class WallpaperGroup {
      */
     cartesianOps() {
         return this.ops.map(G => toCartesian(G, this.lattice.m));
+    }
+}
+
+
+export class WG {
+    /**
+     * @todo rename to WallpaperGroup
+     * @param {string} name
+     */
+    constructor(name) {
+        const type = LatticeType[name];
+        if (!type) {
+            throw new Error(`unknown wallpaper group: ${name}`);
+        }
+        this.latticeType = type;
+        this.name = name;
+
+        const ops = OPS[name];
+        if (ops === undefined) {
+            throw new Error(`unknown wallpaper group: ${name}`);
+        }
+        this.ops = ops;
+    }
+
+    /**
+     * @param {Lattice} L
+     * @returns {AffineMatrix[]}
+     */
+    cartesianOps(L) {
+        if (!SUBLATTICES[this.latticeType].includes(L.type)) {
+            throw new Error(`${this.name} cannot accept ${L.type} lattice`);
+        }
+        return this.ops.map(G => toCartesian(G, L.m));
     }
 }
 
