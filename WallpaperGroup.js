@@ -141,147 +141,177 @@ const Manti = T(0, -1, -1, 0); // mirror (x, y) -> (-y, -x) [hex lattice]
 
 const CR = T(1, 0, 0, 1, 0.5, 0.5);  // centering translation (x, y) -> (x + 1/2, y + 1/2)
 
-/** @type {Record<string, string>} */
-const LatticeType = {
-    p1: "oblique",
-    p2: "oblique",
-    pm: "rectangular",
-    pg: "rectangular",
-    pmm: "rectangular",
-    pmg: "rectangular",
-    pgg: "rectangular",
-    cm: "rectangular",
-    cmm: "rectangular",
-    p4: "square",
-    p4m: "square",
-    p4g: "square",
-    p3: "hexagonal",
-    p3m1: "hexagonal",
-    p31m: "hexagonal",
-    p6: "hexagonal",
-    p6m: "hexagonal",
-};
-
-/** @type {Record<string, AffineMatrix[]>} */
-const OPS = {
-    p1: [
-        I,
-    ],
-    p2: [
-        I,
-        R180,
-    ],
-    pm: [
-        I,
-        Mx,
-    ],
-    pg: [
-        I,
-        [-1, 0, 0, 1, 0, 0.5],
-    ],
-    pmm: [
-        I,
-        R180,
-        Mx,
-        My,
-    ],
-    pmg: [
-        I,
-        Mx,
-        [-1, 0, 0, -1, 0.5, 0],
-        [1, 0, 0, -1, 0.5, 0],
-    ],
-    pgg: [
-        I,
-        R180,
-        [-1, 0, 0, 1, 0.5, 0.5],
-        [1, 0, 0, -1, -0.5, -0.5],
-    ],
-    cm: [
-        I,
-        Mx,
-        CR,
-        [-1, 0, 0, 1, 0.5, 0.5], // CR M_X
-    ],
-    cmm: [
-        I,
-        R180,
-        Mx,
-        My,
-        CR,
-        [-1, 0, 0, -1, 0.5, 0.5], // CR R2
-        [-1, 0, 0, 1, 0.5, 0.5],  // CR M_X
-        [1, 0, 0, -1, 0.5, 0.5],  // CR M_Y
-    ],
-    p4: [
-        I,
-        R90,
-        R180,
-        R270,
-    ],
-    p4m: [
-        I,
-        R90,
-        R270,
-        R180,
-        Mx,
-        My,
-        Mdiag,
-        Manti,
-    ],
-    p4g: [
-        I,
-        R90,
-        R180,
-        R270,
-        [0, 1, 1, 0, 0.5, 0.5],    // (x, y) -> (y + 0.5, x + 0.5)
-        [0, -1, -1, 0, 0.5, 0.5],  // (x, y) -> (-y + 0.5, -x + 0.5)
-        [1, 0, 0, -1, 0.5, 0.5],   // (x, y) -> (x + 0.5, -y + 0.5)
-        [-1, 0, 0, 1, 0.5, 0.5],   // (x, y) -> (-x + 0.5, y + 0.5)
-    ],
-    p3: [
-        I,
-        R120,
-        R240,
-    ],
-    p3m1: [
-        I,
-        R120,
-        R240,
-        Manti,
-        [-1, 0, 1, 1, 0, 0],
-        [1, 1, 0, -1, 0, 0],
-    ],
-    p31m: [
-        I,
-        R120,
-        R240,
-        Mdiag,
-        [1, 0, -1, -1, 0, 0],
-        [-1, -1, 0, 1, 0, 0],
-    ],
-    p6: [
-        I,
-        R60,
-        R120,
-        R180,
-        R240,
-        [0, -1, 1, 1, 0, 0],  // R300
-    ],
-    p6m: [
-        I,
-        R60,
-        R120,
-        R180,
-        R240,
-        [0, -1, 1, 1, 0, 0],  // R300
-        Mdiag,
-        Manti,
-        [1, 1, 0, -1, 0, 0],
-        [-1, 0, 1, 1, 0, 0],
-        [1, 0, -1, -1, 0, 0],
-        [-1, -1, 0, 1, 0, 0],
-    ],
+/** @type {Record<string, {lattice: string, ops: AffineMatrix[]}>} */
+const Groups = {
+    p1: {
+        lattice: "oblique",
+        ops: [
+            I,
+        ]
+    },
+    p2: {
+        lattice: "oblique",
+        ops: [
+            I,
+            R180,
+        ]
+    },
+    pm: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            Mx,
+        ]
+    },
+    pg: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            [-1, 0, 0, 1, 0, 0.5],
+        ]
+    },
+    pmm: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            R180,
+            Mx,
+            My,
+        ]
+    },
+    pmg: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            Mx,
+            [-1, 0, 0, -1, 0.5, 0],
+            [1, 0, 0, -1, 0.5, 0],
+        ]
+    },
+    pgg: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            R180,
+            [-1, 0, 0, 1, 0.5, 0.5],
+            [1, 0, 0, -1, -0.5, -0.5],
+        ]
+    },
+    cm: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            Mx,
+            CR,
+            [-1, 0, 0, 1, 0.5, 0.5], // CR M_X
+        ]
+    },
+    cmm: {
+        lattice: "rectangular",
+        ops: [
+            I,
+            R180,
+            Mx,
+            My,
+            CR,
+            [-1, 0, 0, -1, 0.5, 0.5], // CR R2
+            [-1, 0, 0, 1, 0.5, 0.5],  // CR M_X
+            [1, 0, 0, -1, 0.5, 0.5],  // CR M_Y
+        ]
+    },
+    p4: {
+        lattice: "square",
+        ops: [
+            I,
+            R90,
+            R180,
+            R270,
+        ]
+    },
+    p4m: {
+        lattice: "square",
+        ops: [
+            I,
+            R90,
+            R180,
+            R270,
+            Mx,
+            My,
+            Mdiag,
+            Manti,
+        ]
+    },
+    p4g: {
+        lattice: "square",
+        ops: [
+            I,
+            R90,
+            R180,
+            R270,
+            [0, 1, 1, 0, 0.5, 0.5],    // (x, y) -> (y + 0.5, x + 0.5)
+            [0, -1, -1, 0, 0.5, 0.5],  // (x, y) -> (-y + 0.5, -x + 0.5)
+            [1, 0, 0, -1, 0.5, 0.5],   // (x, y) -> (x + 0.5, -y + 0.5)
+            [-1, 0, 0, 1, 0.5, 0.5],   // (x, y) -> (-x + 0.5, y + 0.5)
+        ]
+    },
+    p3: {
+        lattice: "hexagonal",
+        ops: [
+            I,
+            R120,
+            R240,
+        ]
+    },
+    p3m1: {
+        lattice: "hexagonal",
+        ops: [
+            I,
+            R120,
+            R240,
+            Manti,
+            [-1, 0, 1, 1, 0, 0],
+            [1, 1, 0, -1, 0, 0],
+        ]
+    },
+    p31m: {
+        lattice: "hexagonal",
+        ops: [
+            I,
+            R120,
+            R240,
+            Mdiag,
+            [1, 0, -1, -1, 0, 0],
+            [-1, -1, 0, 1, 0, 0],
+        ]
+    },
+    p6: {
+        lattice: "hexagonal",
+        ops: [
+            I,
+            R60,
+            R120,
+            R180,
+            R240,
+            [0, -1, 1, 1, 0, 0],  // R300
+        ]
+    },
+    p6m: {
+        lattice: "hexagonal",
+        ops: [
+            I,
+            R60,
+            R120,
+            R180,
+            R240,
+            [0, -1, 1, 1, 0, 0],  // R300
+            Mdiag,
+            Manti,
+            [1, 1, 0, -1, 0, 0],
+            [-1, 0, 1, 1, 0, 0],
+            [1, 0, -1, -1, 0, 0],
+            [-1, -1, 0, 1, 0, 0],
+        ]
+    },
 };
 
 /** @type {Record<string, string[]>} */
@@ -294,51 +324,15 @@ const SUBLATTICES = {
 
 export class WallpaperGroup {
     /**
-     * @todo delete this later
-     * @param {string} name
-     * @param {Lattice} lattice
-     */
-    constructor(name, lattice) {
-        if (!SUBLATTICES[LatticeType[name]].includes(lattice.type)) {
-            throw new Error(`${name} cannot have lattice ${lattice.type}`);
-        }
-
-        this.lattice = lattice;
-        const ops = OPS[name];
-        if (ops === undefined) {
-            throw new Error(`unknown wallpaper group: ${name}`);
-        }
-        this.ops = ops;
-        this.cops = this.cartesianOps();
-    }
-
-    /**
-     * @returns {AffineMatrix[]}
-     */
-    cartesianOps() {
-        return this.ops.map(G => toCartesian(G, this.lattice.m));
-    }
-}
-
-
-export class WG {
-    /**
      * @todo rename to WallpaperGroup
      * @param {string} name
      */
     constructor(name) {
-        const type = LatticeType[name];
-        if (!type) {
-            throw new Error(`unknown wallpaper group: ${name}`);
-        }
-        this.latticeType = type;
+        const def = Groups[name];
+        if (!def) throw new Error(`Unknown wallpaper group: ${name}`);
         this.name = name;
-
-        const ops = OPS[name];
-        if (ops === undefined) {
-            throw new Error(`unknown wallpaper group: ${name}`);
-        }
-        this.ops = ops;
+        this.latticeType = def.lattice;
+        this.ops = def.ops;
     }
 
     /**
