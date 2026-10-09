@@ -1,5 +1,5 @@
 import { Pt, Triangle, Circle } from "./common.js";
-import { Lattice, WallpaperGroup, mul, cartesianOps } from "./WallpaperGroup.js";
+import { Lattice, WallpaperGroup, mul } from "./WallpaperGroup.js";
 
 /** @typedef {{x: number, y: number}} XY */
 
@@ -231,13 +231,12 @@ export class Renderer {
      */
     group(G, motif) {
         const { i0, i1, j0, j1 } = this.#tileRange(G.lattice);
-        const ops = cartesianOps(G.ops, G.lattice);
 
         for (let i = i0; i <= i1; i++) {
             for (let j = j0; j <= j1; j++) {
                 const t = G.lattice.translation(i, j);
 
-                for (const m of ops) {
+                for (const m of G.cops) {
                     this.c.save();
                     this.c.transform(...mul(t, m));
                     motif(this.c);
