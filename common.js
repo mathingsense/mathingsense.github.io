@@ -299,6 +299,21 @@ export class Circle {
     }
 }
 
+export class Ellipse {
+    /**
+     * @param {XY} f1
+     * @param {XY} f2
+     * @param {XY} p
+     * @returns {[number, number]}
+     */
+    static findABfromFoci(f1, f2, p) {
+        const C = distance(f1, f2) / 2;
+        const A = (distance(f1, p) + distance(f2, p)) / 2;
+        const B = Math.sqrt(A * A - C * C);
+        return [A, B];
+    }
+}
+
 /** @typedef {[number, number, number, number, number, number]} TransformMatrix */
 
 /**

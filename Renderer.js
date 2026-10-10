@@ -69,6 +69,20 @@ export class Renderer {
     }
 
     /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} rx
+     * @param {number} ry
+     * @param {number} t
+     * @param {Mode} mode
+     */
+    ellipse(x, y, rx, ry, t, mode) {
+        this.c.beginPath();
+        this.c.ellipse(x, y, rx, ry, t, 0, TAU);
+        paint(this.c, mode);
+    }
+
+    /**
      * @param {Pt} A
      * @param {Pt} B
      */
