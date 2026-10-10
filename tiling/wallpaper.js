@@ -1,13 +1,18 @@
-import { initCanvas, getElement } from "../common.js";
+import { initCanvas, getElement, getPointerPos } from "../common.js";
 import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
-import { Renderer, STROKE } from "../Renderer.js";
+import { FILL, Renderer, STROKE } from "../Renderer.js";
 
 const width = 600;
 const height = 600;
 
-const [_, c] = initCanvas("canvas", width, height);
-const select = getElement("group", HTMLSelectElement);
-select.value = "p6m";
+const [canvas, c] = initCanvas("canvas", width, height);
+const selectGroup = getElement("group", HTMLSelectElement);
+const selectMode = getElement("mode", HTMLSelectElement);
+const showGrid = getElement("showGrid", HTMLInputElement);
+
+selectGroup.value = "p1";
+selectMode.value = "default";
+showGrid.checked = true;
 
 const render = new Renderer(c, width, height);
 
@@ -102,7 +107,17 @@ const defaults = {
     p6m: [p6m, lp6m, mp6m],
 };
 
-let current = defaults[select.value];
+let currGroup = selectGroup.value;
+let currMode = selectMode.value;
+let current = defaults[currGroup];
+
+/** @type {{points: [number, number][]}[]} */
+let strokes = [];
+
+/** @type {{points: [number, number][]} | null} */
+let currStroke = null;
+
+let isDrawing = false;
 
 /**
  * @param {CanvasRenderingContext2D} c 
@@ -114,14 +129,107 @@ const draw = (c) => {
     c.fillRect(0, 0, width, height);
 
     c.fillStyle = "#000"
+    if (showGrid.checked) {
+        render.lattice(current[1]);
+    }
     render.group(current[0], current[1], current[2]);
 }
 draw(c);
 
-const onChange = () => {
-    const value = select.value;
-    current = defaults[value];
+function drawCustom() {
+    const visibleStrokes = currStroke
+        ? [...strokes, currStroke]
+        : strokes;
+
+    for (const stroke of visibleStrokes) {
+        drawStroke(c, stroke);
+    }
+}
+
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {{points: [number, number][]}} stroke
+ */
+function drawStroke(ctx, stroke) {
+    const points = stroke.points;
+    if (points.length === 0) return;
+
+    ctx.strokeStyle = "#000";
+    if (points.length === 1) {
+        // A tap should produce a dot.
+        render.circle2(points[0][0], points[0][1], 2, FILL);
+    } else {
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i][0], points[i][1]);
+        }
+        ctx.stroke();
+    }
+}
+
+/**
+ * @param {PointerEvent} e
+ */
+const pointerDown = (e) => {
+    if (currMode !== "freehand") return;
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+
+    isDrawing = true;
+    currStroke = {
+        points: [getPointerPos(canvas, e)]
+    };
     draw(c);
 }
 
-select.addEventListener("change", onChange, false);
+/**
+ * @param {PointerEvent} e
+ */
+const pointerMove = (e) => {
+    if (!isDrawing || !currStroke) return;
+    currStroke.points.push(getPointerPos(canvas, e));
+    draw(c);
+}
+
+function finishStroke() {
+    if (!isDrawing) return;
+    isDrawing = false;
+
+    if (currStroke) {
+        strokes.push(currStroke);
+        currStroke = null;
+    }
+    draw(c);
+}
+
+canvas.style.touchAction = "none";
+canvas.addEventListener("pointerdown", pointerDown, false);
+canvas.addEventListener("pointermove", pointerMove, false);
+canvas.addEventListener("pointerup", finishStroke);
+canvas.addEventListener("pointercancel", finishStroke);
+
+showGrid.addEventListener("change", () => draw(c));
+
+const updateMode = () => {
+    if (currMode === "default") {
+        current[2] = defaults[currGroup][2];
+    } else {
+        current = [current[0], current[1], drawCustom];
+    }
+}
+
+selectGroup.addEventListener("change", () => {
+    const value = selectGroup.value;
+    currGroup = value;
+    current = defaults[value];
+    updateMode();
+    draw(c);
+});
+
+selectMode.addEventListener("change", () => {
+    const value = selectMode.value;
+    currMode = value;
+    updateMode();
+    draw(c);
+});

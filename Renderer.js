@@ -216,13 +216,6 @@ export class Renderer {
             this.c.lineTo(...L.point(i1, j));
         }
         this.c.stroke();
-
-        for (let i = i0; i <= i1; i++) {
-            for (let j = j0; j <= j1; j++) {
-                const p = L.point(i, j);
-                this.pt2(p[0], p[1], 5, FILL);
-            }
-        }
     }
 
     /**
@@ -246,6 +239,26 @@ export class Renderer {
                     this.c.restore();
                 }
             }
+        }
+    }
+
+    /**
+     * Draw just a specific cell for testing.
+     * @param {WallpaperGroup} G
+     * @param {Lattice} L
+     * @param {(c: CanvasRenderingContext2D) => void} motif
+     * @param {number} i
+     * @param {number} j
+     */
+    group1(G, L, motif, i, j) {
+        const ops = G.cartesianOps(L);
+        const t = L.translation(i, j);
+
+        for (const m of ops) {
+            this.c.save();
+            this.c.transform(...mul(t, m));
+            motif(this.c);
+            this.c.restore();
         }
     }
 }

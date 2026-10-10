@@ -14,8 +14,7 @@
 
     <h1>Wallpaper Group</h1>
 
-    <label for="group">Choose a group:</label>
-
+    <label for="group">Group</label>
     <select id="group">
         <option value="p1">p1</option>
         <option value="p2">p2</option>
@@ -35,6 +34,20 @@
         <option value="p6">p6</option>
         <option value="p6m">p6m</option>
     </select>
+    <br>
+
+    <label for="mode">Mode</label>
+    <select id="mode">
+        <option value="default">default</option>
+        <option value="freehand">freehand</option>
+    </select>
+    <br>
+
+    <label>
+        <input type="checkbox" id="showGrid" checked>
+        Show grid
+    </label>
+
     <br><br>
 
     <canvas id="canvas"></canvas>
