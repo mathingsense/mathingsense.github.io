@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square limit | MathingSense</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+    <a href="../index.html">back</a>
+
+    <h1>Square Limit</h1>
+
+    <label for="step">Steps </label>
+    <select id="step">
+        <option value="base">p, q, r, s</option>
+        <option value="t">t</option>
+        <option value="u">u</option>
+        <option value="side1">side1</option>
+        <option value="side2">side2</option>
+        <option value="corner1">corner1</option>
+        <option value="corner2">corner2</option>
+        <option value="pseudocorner">pseudocorner</option>
+        <option value="pseudolimit">pseudolimit</option>
+        <option value="corner">corner</option>
+        <option value="squarelimit">squarelimit</option>
+    </select>
+    <br><br>
+
+    <canvas id="canvas"></canvas>
+
+    <p>
+        This implementation is based on Peter Henderson's paper "Functional Geometry". See <a href="https://worrydream.com/refs/Henderson_1982_-_Functional_Geometry.pdf">here</a>.
+        I use the fish vertices with some changes from <a href="https://frank-buss.de/lisp/functional.html">here</a>.
+    </p>
+
+    <script src="square-limit.js" type="module"></script>
+
+</body>
+
+</html>
