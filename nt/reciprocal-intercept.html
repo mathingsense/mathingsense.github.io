@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reciprocal intercept | MathingSense</title>
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+
+    <a href="../index.html">back</a>
+
+    <h1>Reciprocal Intercept</h1>
+
+    <label for="z">z: </label>
+    <select id="z">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+    </select>
+    <br>
+
+    <div id="result"></div>
+    <br>
+
+    <canvas id="canvas"></canvas>
+
+    <p>
+        The positive integer solutions of
+        \[
+        \frac{1}{x} + \frac{1}{y} = \frac{1}{z}
+        \]
+        are obtained by taking any positive divisor \(d\) of \(z^2\) and setting
+        \[
+        x = z + d, \qquad y = z + \frac{z^2}{d}.
+        \]
+    </p>
+
+    <script src="reciprocal-intercept.js" type="module"></script>
+
+</body>
+
+</html>
