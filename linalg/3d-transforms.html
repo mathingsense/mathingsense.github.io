@@ -19,47 +19,8 @@
         On a touchscreen, swipe outside the canvas to scroll the page.
     </p>
 
-    <div class="controls">
-        <h3>Transform the cube</h3>
-
-        <div class="control">
-            <label for="scale-x">
-                Scale X <output id="scale-x-value">1.0</output>
-            </label>
-            <input id="scale-x" type="range" min="0.2" max="2.5" step="0.1" value="1">
-        </div>
-
-        <div class="control">
-            <label for="scale-y">
-                Scale Y <output id="scale-y-value">1.0</output>
-            </label>
-            <input id="scale-y" type="range" min="0.2" max="2.5" step="0.1" value="1">
-        </div>
-
-        <div class="control">
-            <label for="scale-z">
-                Scale Z <output id="scale-z-value">1.0</output>
-            </label>
-            <input id="scale-z" type="range" min="0.2" max="2.5" step="0.1" value="1">
-        </div>
-
-        <div class="control">
-            <label for="rotation-y">
-                Rotation Y <output id="rotation-y-value">0°</output>
-            </label>
-            <input id="rotation-y" type="range" min="0" max="360" step="1" value="0">
-        </div>
-
-        <div class="matrix-panel">
-            <h3>Model matrix</h3>
-            <pre id="matrix-display"></pre>
-        </div>
-
-        <button id="reset-transform">Reset transformation</button>
-    </div>
-
-    <button id="reset-camera">Reset camera</button>
-    <br><br>
+    <h3>Model matrix</h3>
+    <pre id="matrix-display"></pre>
 
     <canvas id="canvas"></canvas>
     <br>
