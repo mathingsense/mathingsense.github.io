@@ -1,5 +1,5 @@
 import { getElement, initCanvasGl } from "../common.js";
-import { createCube, createGridAndAxes, createProgram, identity, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createCube, createCubeWireframe, createGridAndAxes, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
 
 const width = 600;
@@ -124,9 +124,72 @@ gl.depthFunc(gl.LEQUAL);
 
 gl.clearColor(1, 1, 1, 1);
 
-const model = identity();
 const cube = createCube(gl);
+const originalWireframe = createCubeWireframe(gl);
 const gridAndAxes = createGridAndAxes(gl);
+
+let model = M4.identity();
+
+const scaleX = getElement("scale-x", HTMLInputElement);
+const scaleY = getElement("scale-y", HTMLInputElement);
+const scaleZ = getElement("scale-z", HTMLInputElement);
+const rotY = getElement("rotation-y", HTMLInputElement);
+
+const scaleXOut = getElement("scale-x-value", HTMLOutputElement);
+const scaleYOut = getElement("scale-y-value", HTMLOutputElement);
+const scaleZOut = getElement("scale-z-value", HTMLOutputElement);
+const rotYOut = getElement("rotation-y-value", HTMLOutputElement);
+
+const matrixDisplay = getElement("matrix-display", HTMLPreElement);
+
+function updateTransform() {
+    const sx = Number(scaleX.value);
+    const sy = Number(scaleY.value);
+    const sz = Number(scaleZ.value);
+    const angle = Number(rotY.value);
+
+    scaleXOut.textContent = sx.toFixed(1);
+    scaleYOut.textContent = sy.toFixed(1);
+    scaleZOut.textContent = sz.toFixed(1);
+    rotYOut.textContent = `${angle}°`;
+
+    model = M4.multiply(M4.rotationY(angle), M4.scaling(sx, sy, sz));
+
+    // Display the matrix as four readable rows.
+    const rows = [];
+
+    for (let row = 0; row < 4; row++) {
+        const values = [];
+        for (let col = 0; col < 4; col++) {
+            values.push(
+                model[col * 4 + row].toFixed(2).padStart(6)
+            );
+        }
+        rows.push(`[ ${values.join("  ")} ]`);
+    }
+
+    matrixDisplay.textContent = rows.join("\n");
+}
+
+[scaleX, scaleY, scaleZ, rotY].forEach(
+    (input) => {
+        input.addEventListener("input", updateTransform);
+    }
+);
+
+getElement("reset-transform", HTMLButtonElement)
+    .addEventListener("click", () => {
+        scaleX.value = "1";
+        scaleY.value = "1";
+        scaleZ.value = "1";
+        rotY.value = "0";
+
+        updateTransform();
+    });
+
+updateTransform();
+
+const I4 = M4.identity();
 
 const aspect = canvas.width / canvas.height;
 const proj = perspective(Math.PI / 4, aspect, 0.1, 100);
@@ -140,8 +203,19 @@ const render = () => {
 
     orbitView(azimuth, elevation, distance, view);
 
-    drawMesh(gridAndAxes, model, view, proj);
+    drawMesh(gridAndAxes, I4, view, proj);
+
+    // Draw the original cube as a ghost wireframe.
+    // Do not let the wireframe write to the depth buffer.
+    gl.depthMask(false);
+
+    drawMesh(originalWireframe, I4, view, proj);
+
+    // Restore depth writes before drawing the solid cube.
+    gl.depthMask(true);
+
     drawMesh(cube, model, view, proj);
+
     requestAnimationFrame(render);
 };
 render();

@@ -50,14 +50,67 @@ export const createProgram = (gl, vSource, fSource) => {
     return program;
 };
 
-export const identity = () => {
-    return new Float32Array([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1,
-    ]);
-};
+export class M4 {
+    static identity = () => {
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ]);
+    }
+
+    /**
+     * @param {number} sx
+     * @param {number} sy
+     * @param {number} sz
+     * @returns {Float32Array}
+     */
+    static scaling(sx, sy, sz) {
+        return new Float32Array([
+            sx, 0, 0, 0,
+            0, sy, 0, 0,
+            0, 0, sz, 0,
+            0, 0, 0, 1,
+        ]);
+    }
+
+    /**
+     * @param {number} deg
+     * @returns {Float32Array}
+     */
+    static rotationY(deg) {
+        const angle = deg * Math.PI / 180;
+        const c = Math.cos(angle);
+        const s = Math.sin(angle);
+
+        return new Float32Array([
+            c, 0, -s, 0,
+            0, 1, 0, 0,
+            s, 0, c, 0,
+            0, 0, 0, 1,
+        ]);
+    }
+
+    /**
+     * @param {Float32Array} a
+     * @param {Float32Array} b
+     * @returns {Float32Array<ArrayBuffer>}
+     */
+    static multiply(a, b) {
+        const out = new Float32Array(16);
+
+        for (let col = 0; col < 4; col++) {
+            for (let row = 0; row < 4; row++) {
+                for (let k = 0; k < 4; k++) {
+                    out[col * 4 + row] += a[k * 4 + row] * b[col * 4 + k];
+                }
+            }
+        }
+
+        return out;
+    }
+}
 
 /**
  * @param {number} fov
@@ -214,6 +267,39 @@ export const createCube = (gl) => {
     }
 
     return createMesh(gl, vertices, gl.TRIANGLES);
+};
+
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @returns {Mesh}
+ */
+export const createCubeWireframe = (gl) => {
+    const vertices = [];
+    const color = [0.55, 0.65, 0.80];
+
+    const corners = [
+        [-1, -1, -1], // 0
+        [1, -1, -1], // 1
+        [1, 1, -1], // 2
+        [-1, 1, -1], // 3
+        [-1, -1, 1], // 4
+        [1, -1, 1], // 5
+        [1, 1, 1], // 6
+        [-1, 1, 1], // 7
+    ];
+
+    const edges = [
+        [0, 1], [1, 2], [2, 3], [3, 0],
+        [4, 5], [5, 6], [6, 7], [7, 4],
+        [0, 4], [1, 5], [2, 6], [3, 7],
+    ];
+
+    for (const [a, b] of edges) {
+        vertices.push(...corners[a], ...color);
+        vertices.push(...corners[b], ...color);
+    }
+
+    return createMesh(gl, vertices, gl.LINES);
 };
 
 /**
