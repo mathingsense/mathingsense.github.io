@@ -21,7 +21,7 @@ export const compileShader = (gl, type, source) => {
     }
 
     return shader;
-}
+};
 
 /**
  * @param {WebGL2RenderingContext} gl
@@ -48,7 +48,7 @@ export const createProgram = (gl, vSource, fSource) => {
     }
 
     return program;
-}
+};
 
 export const identity = () => {
     return new Float32Array([
@@ -57,7 +57,7 @@ export const identity = () => {
         0, 0, 1, 0,
         0, 0, 0, 1,
     ]);
-}
+};
 
 /**
  * @param {number} fov
@@ -76,72 +76,65 @@ export const perspective = (fov, aspect, near, far) => {
         0, 0, (far + near) * nf, -1,
         0, 0, 2 * far * near * nf, 0,
     ]);
-}
+};
 
 /**
- * @param {number[]} eye 
- * @param {number[]} center 
- * @param {number[]} up 
+ * @param {ArrayLike<number>} eye
+ * @param {ArrayLike<number>} center
+ * @param {ArrayLike<number>} up
+ * @param {Float32Array} [out]
  * @returns {Float32Array}
  */
-export const lookAt = (eye, center, up) => {
+export const lookAt = (eye, center, up, out = new Float32Array(16)) => {
     let zx = eye[0] - center[0];
     let zy = eye[1] - center[1];
     let zz = eye[2] - center[2];
 
-    let length = Math.hypot(zx, zy, zz);
-    zx /= length;
-    zy /= length;
-    zz /= length;
+    let len = Math.hypot(zx, zy, zz);
+    if (len < 1e-8) throw new RangeError("lookAt: eye and center coincide");
+    zx /= len;
+    zy /= len;
+    zz /= len;
 
     let xx = up[1] * zz - up[2] * zy;
     let xy = up[2] * zx - up[0] * zz;
     let xz = up[0] * zy - up[1] * zx;
 
-    length = Math.hypot(xx, xy, xz);
-    xx /= length;
-    xy /= length;
-    xz /= length;
+    len = Math.hypot(xx, xy, xz);
+    if (len < 1e-8) throw new RangeError("lookAt: up is parallel to view direction");
+    xx /= len;
+    xy /= len;
+    xz /= len;
 
     const yx = zy * xz - zz * xy;
     const yy = zz * xx - zx * xz;
     const yz = zx * xy - zy * xx;
 
-    return new Float32Array([
-        xx, yx, zx, 0,
-        xy, yy, zy, 0,
-        xz, yz, zz, 0,
-
-        -(xx * eye[0] + xy * eye[1] + xz * eye[2]),
-        -(yx * eye[0] + yy * eye[1] + yz * eye[2]),
-        -(zx * eye[0] + zy * eye[1] + zz * eye[2]),
-        1,
-    ]);
-}
+    out[0] = xx; out[1] = yx; out[2] = zx; out[3] = 0;
+    out[4] = xy; out[5] = yy; out[6] = zy; out[7] = 0;
+    out[8] = xz; out[9] = yz; out[10] = zz; out[11] = 0;
+    out[12] = -(xx * eye[0] + xy * eye[1] + xz * eye[2]);
+    out[13] = -(yx * eye[0] + yy * eye[1] + yz * eye[2]);
+    out[14] = -(zx * eye[0] + zy * eye[1] + zz * eye[2]);
+    out[15] = 1;
+    return out;
+};
 
 /**
- * @param {HTMLCanvasElement} canvas
  * @param {number} azimuth
  * @param {number} elevation
  * @param {number} distance
- * @returns {{view: Float32Array, projection: Float32Array}}
+ * @param {Float32Array} [out]
+ * @returns {Float32Array}
  */
-export const getCameraMatrices = (canvas, azimuth, elevation, distance) => {
-    const target = [0, 0, 0];
-
+export const orbitView = (azimuth, elevation, distance, out = new Float32Array(16)) => {
     const eye = [
         distance * Math.cos(elevation) * Math.sin(azimuth),
         distance * Math.sin(elevation),
         distance * Math.cos(elevation) * Math.cos(azimuth),
     ];
-
-    const view = lookAt(eye, target, [0, 1, 0]);
-
-    const aspect = canvas.width / canvas.height;
-    const projection = perspective(Math.PI / 4, aspect, 0.1, 100);
-
-    return { view, projection };
-}
+    return lookAt(eye, [0, 0, 0], [0, 1, 0], out);
+};
 
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
@@ -166,7 +159,7 @@ export const createMesh = (gl, data, mode) => {
         count: data.length / 6,
         mode,
     };
-}
+};
 
 /**
  * vertex: x, y, z, r, g, b
@@ -221,7 +214,7 @@ export const createCube = (gl) => {
     }
 
     return createMesh(gl, vertices, gl.TRIANGLES);
-}
+};
 
 /**
  * @param {WebGL2RenderingContext} gl
@@ -281,7 +274,7 @@ export const createGridAndAxes = (gl) => {
     );
 
     return createMesh(gl, vertices, gl.LINES);
-}
+};
 
 /**
  * @param {HTMLCanvasElement} canvas
@@ -299,4 +292,4 @@ export const resizeCanvas = (canvas, gl) => {
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height);
-}
+};

@@ -1,5 +1,5 @@
 import { getElement, initCanvasGl } from "../common.js";
-import { createCube, createGridAndAxes, createProgram, getCameraMatrices, identity, resizeCanvas } from "../Gl.js";
+import { createCube, createGridAndAxes, createProgram, identity, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
 
 const width = 600;
@@ -23,7 +23,7 @@ const uProjection = gl.getUniformLocation(program, "uProjection");
  * @param {Float32Array} view 
  * @param {Float32Array} projection 
  */
-function drawMesh(mesh, model, view, projection) {
+const drawMesh = (mesh, model, view, projection) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
 
     gl.enableVertexAttribArray(0);
@@ -37,7 +37,7 @@ function drawMesh(mesh, model, view, projection) {
     gl.uniformMatrix4fv(uProjection, false, projection);
 
     gl.drawArrays(mesh.mode, 0, mesh.count);
-}
+};
 
 
 let azimuth = 0.75;
@@ -80,7 +80,6 @@ canvas.addEventListener("pointermove", (e) => {
         const dist = Math.hypot(a.x - b.x, a.y - b.y);
 
         if (lastPinchDist !== null && dist > 0) {
-            // fingers apart (dist grows) => zoom in => distance shrinks
             distance *= lastPinchDist / dist;
             distance = Math.max(minDistance, Math.min(maxDistance, distance));
         }
@@ -101,14 +100,11 @@ canvas.addEventListener("pointercancel", endPointer);
 
 canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
-
     distance *= Math.exp(e.deltaY * 0.001);
-
-    distance = Math.max(
-        minDistance,
-        Math.min(maxDistance, distance)
-    );
-}, { passive: false });
+    distance = Math.max(minDistance, Math.min(maxDistance, distance));
+},
+    { passive: false }
+);
 
 getElement("reset-camera", HTMLButtonElement)
     .addEventListener("click", () => {
@@ -132,15 +128,20 @@ const model = identity();
 const cube = createCube(gl);
 const gridAndAxes = createGridAndAxes(gl);
 
+const aspect = canvas.width / canvas.height;
+const proj = perspective(Math.PI / 4, aspect, 0.1, 100);
+
+let view = orbitView(azimuth, elevation, distance);
+
 const render = () => {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.useProgram(program);
 
-    const { view, projection } = getCameraMatrices(canvas, azimuth, elevation, distance);
+    orbitView(azimuth, elevation, distance, view);
 
-    drawMesh(gridAndAxes, model, view, projection);
-    drawMesh(cube, model, view, projection);
+    drawMesh(gridAndAxes, model, view, proj);
+    drawMesh(cube, model, view, proj);
     requestAnimationFrame(render);
-}
+};
 render();
