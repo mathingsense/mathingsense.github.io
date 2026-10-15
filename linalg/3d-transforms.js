@@ -47,41 +47,57 @@ let distance = 7.5;
 const minDistance = 3;
 const maxDistance = 20;
 
-let dragging = false;
-let lastX = 0;
-let lastY = 0;
+const pointers = new Map();   // pointerId -> {x, y}
+
+/** @type number | null */
+let lastPinchDist = null;
 
 canvas.style.touchAction = "none";
 
 canvas.addEventListener("pointerdown", (e) => {
-    dragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
     canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    lastPinchDist = null;
 });
 
 canvas.addEventListener("pointermove", (e) => {
-    if (!dragging) return;
+    const prev = pointers.get(e.pointerId);
+    if (!prev) return;
 
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-    azimuth -= dx * 0.008;
-    elevation += dy * 0.008;
+    if (pointers.size === 1) {
+        // one pointer: rotate
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
 
-    elevation = Math.max(-1.45, Math.min(1.45, elevation));
+        azimuth -= dx * 0.008;
+        elevation += dy * 0.008;
+        elevation = Math.max(-1.45, Math.min(1.45, elevation));
+    } else if (pointers.size === 2) {
+        // two pointers: pinch to zoom
+        const [a, b] = [...pointers.values()];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
 
-    lastX = e.clientX;
-    lastY = e.clientY;
+        if (lastPinchDist !== null && dist > 0) {
+            // fingers apart (dist grows) => zoom in => distance shrinks
+            distance *= lastPinchDist / dist;
+            distance = Math.max(minDistance, Math.min(maxDistance, distance));
+        }
+        lastPinchDist = dist;
+    }
 });
 
-canvas.addEventListener("pointerup", () => {
-    dragging = false;
-});
+/**
+ * @param {PointerEvent} e
+ */
+const endPointer = (e) => {
+    pointers.delete(e.pointerId);
+    lastPinchDist = null;
+};
 
-canvas.addEventListener("pointercancel", () => {
-    dragging = false;
-});
+canvas.addEventListener("pointerup", endPointer);
+canvas.addEventListener("pointercancel", endPointer);
 
 canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
