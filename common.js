@@ -52,6 +52,33 @@ export const initCanvas = (id, width, height) => {
 };
 
 /**
+ * @param {string} id
+ * @param {number} width
+ * @param {number} height
+ * @returns {[HTMLCanvasElement, WebGL2RenderingContext]}
+ */
+export const initCanvasGl = (id, width, height) => {
+    if (!(width > 0 && height > 0)) {
+        throw new RangeError('width and height must be positive');
+    }
+
+    const canvas = getElement(id, HTMLCanvasElement);
+    const gl = canvas.getContext("webgl2");
+    if (gl === null) {
+        throw new Error(`could not get a webgl2 context for #${id}`);
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+    return [canvas, gl];
+};
+
+/**
  * @param {XY} A
  * @param {XY} B
  * @returns {number}
