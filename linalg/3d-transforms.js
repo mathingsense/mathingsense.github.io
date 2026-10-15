@@ -51,6 +51,8 @@ let dragging = false;
 let lastX = 0;
 let lastY = 0;
 
+canvas.style.touchAction = "none";
+
 canvas.addEventListener("pointerdown", (e) => {
     dragging = true;
     lastX = e.clientX;
