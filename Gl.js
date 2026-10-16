@@ -477,3 +477,61 @@ export const resizeCanvas = (canvas, gl) => {
 
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
+
+
+/**
+ * Generate a triangle mesh for y = f(x, z)
+ * @param {WebGL2RenderingContext} gl
+ * @param {(x: number, z: number) => number} fn
+ * @param {number} segments
+ * @param {number} size
+ * @returns {Mesh}
+ */
+export const createHeightField = (
+    gl,
+    fn,
+    segments = 100,
+    size = 4
+) => {
+    /** @type number[] */
+    const vertices = [];
+    const step = size / segments;
+    const half = size / 2;
+
+    /**
+     * @param {number} x
+     * @param {number} z
+     */
+    function addVertex(x, z) {
+        const y = fn(x, z);
+
+        // Map height to a blue-to-red color gradient.
+        const t = Math.max(0, Math.min(1, (y + 1) / 2));
+
+        vertices.push(
+            x, y, z,
+            t, 0.25, 1 - t
+        );
+    }
+
+    for (let j = 0; j < segments; j++) {
+        for (let i = 0; i < segments; i++) {
+            const x0 = -half + i * step;
+            const x1 = x0 + step;
+            const z0 = -half + j * step;
+            const z1 = z0 + step;
+
+            // First triangle
+            addVertex(x0, z0);
+            addVertex(x0, z1);
+            addVertex(x1, z0);
+
+            // Second triangle
+            addVertex(x1, z0);
+            addVertex(x0, z1);
+            addVertex(x1, z1);
+        }
+    }
+
+    return createMesh(gl, vertices, gl.TRIANGLES);
+};
