@@ -79,6 +79,23 @@ export class M4 {
      * @param {number} deg
      * @returns {Float32Array}
      */
+    static rotationX(deg) {
+        const angle = deg * Math.PI / 180;
+        const c = Math.cos(angle);
+        const s = Math.sin(angle);
+
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, c, s, 0,
+            0, -s, c, 0,
+            0, 0, 0, 1,
+        ]);
+    }
+
+    /**
+     * @param {number} deg
+     * @returns {Float32Array}
+     */
     static rotationY(deg) {
         const angle = deg * Math.PI / 180;
         const c = Math.cos(angle);
@@ -88,6 +105,23 @@ export class M4 {
             c, 0, -s, 0,
             0, 1, 0, 0,
             s, 0, c, 0,
+            0, 0, 0, 1,
+        ]);
+    }
+
+    /**
+     * @param {number} deg
+     * @returns {Float32Array}
+     */
+    static rotationZ(deg) {
+        const angle = deg * Math.PI / 180;
+        const c = Math.cos(angle);
+        const s = Math.sin(angle);
+
+        return new Float32Array([
+            c, s, 0, 0,
+            -s, c, 0, 0,
+            0, 0, 1, 0,
             0, 0, 0, 1,
         ]);
     }

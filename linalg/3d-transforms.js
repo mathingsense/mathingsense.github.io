@@ -122,12 +122,18 @@ let model = M4.identity();
 const matrixDisplay = getElement("matrix-display", HTMLPreElement);
 
 const scale = { x: 1, y: 1, z: 1 };
-let rotYAngle = 0;
+const rot = { x: 0, y: 0, z: 0 };
 
 const updateTransform = () => {
     model = M4.multiply(
-        M4.rotationY(rotYAngle),
-        M4.scaling(scale.x, scale.y, scale.z)
+        M4.rotationZ(rot.z),
+        M4.multiply(
+            M4.rotationY(rot.y),
+            M4.multiply(
+                M4.rotationX(rot.x),
+                M4.scaling(scale.x, scale.y, scale.z)
+            )
+        )
     );
 
     // Display the matrix as four readable rows.
@@ -182,14 +188,38 @@ const scaleZ = uiSlider({
     },
 });
 
-const rotY = uiSlider({
-    label: "Rotation Y",
-    min: 0,
-    max: 360,
+const rotX = uiSlider({
+    label: "Rotation X",
+    min: -180,
+    max: 180,
     step: 1,
     value: 0,
     onChange(value) {
-        rotYAngle = value;
+        rot.x = value;
+        updateTransform();
+    },
+});
+
+const rotY = uiSlider({
+    label: "Rotation Y",
+    min: -180,
+    max: 180,
+    step: 1,
+    value: 0,
+    onChange(value) {
+        rot.y = value;
+        updateTransform();
+    },
+});
+
+const rotZ = uiSlider({
+    label: "Rotation Z",
+    min: -180,
+    max: 180,
+    step: 1,
+    value: 0,
+    onChange(value) {
+        rot.z = value;
         updateTransform();
     },
 });
@@ -200,7 +230,9 @@ uiButton({
         scaleX.value = 1;
         scaleY.value = 1;
         scaleZ.value = 1;
+        rotX.value = 0;
         rotY.value = 0;
+        rotZ.value = 0;
 
         updateTransform();
     },
