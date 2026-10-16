@@ -72,6 +72,26 @@ style.textContent = `
         opacity: 0.9;
         cursor: not-allowed;
     }
+
+    .ui-select-control {
+        margin: 0;
+    }
+
+    .ui-select {
+        display: block;
+        width: 100%;
+        margin-top: 6px;
+
+        border: 1px solid #000;
+        background: #faf9f6;
+
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .ui-select:hover {
+        background: #f0f5fb;
+    }
 `;
 
 document.head.appendChild(style);
@@ -211,6 +231,82 @@ export const uiButton = ({
         },
     };
 }
+
+
+/** @typedef {{label: string, value: string}} SelectOption */
+
+/**
+ * @typedef {Object} SelectOptions
+ * @property {string} label
+ * @property {SelectOption[]} options
+ * @property {string} value
+ * @property {(value: string) => void} onChange
+ */
+
+/**
+ * @param {SelectOptions} config
+ * @returns {{
+ *   element: HTMLSelectElement,
+ *   value: string
+ * }}
+ */
+export function uiSelect({
+    label,
+    options,
+    value,
+    onChange,
+}) {
+    const container = document.createElement("div");
+    container.className = "ui-select-control";
+
+    const name = document.createElement("label");
+    name.className = "ui-label";
+    name.textContent = label;
+
+    const select = document.createElement("select");
+    select.className = "ui-select";
+
+    for (const option of options) {
+        const item = document.createElement("option");
+        item.textContent = option.label;
+        item.value = option.value;
+        select.appendChild(item);
+    }
+
+    if (!options.some(option => option.value === value)) {
+        throw new Error(`invalid initial value for select "${label}"`);
+    }
+
+    select.value = value;
+
+    name.htmlFor = `select-${uiSelect.nextId++}`;
+    select.id = name.htmlFor;
+
+    select.addEventListener("change", () => {
+        onChange(select.value);
+    });
+
+    container.append(name, select);
+    panel.appendChild(container);
+
+    return {
+        element: select,
+
+        get value() {
+            return select.value;
+        },
+
+        set value(v) {
+            if (!options.some(option => option.value === v)) {
+                throw new Error(`invalid value for select "${label}"`);
+            }
+
+            select.value = v;
+        },
+    };
+}
+
+uiSelect.nextId = 0;
 
 
 const toggleButton = document.createElement("button");
