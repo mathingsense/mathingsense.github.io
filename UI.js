@@ -3,14 +3,14 @@ const style = document.createElement("style");
 style.textContent = `
     .ui {
         position: fixed;
-        top: 60px;
-        left: 20px;
+        top: 40px;
+        right: 10px;
         width: 280px;
         padding: 10px;
         box-sizing: border-box;
 
         color: #000;
-        background: #faf9f6;
+        background: #ffffff55;
         border: 1px solid #000;
 
         font-size: 14px;
@@ -27,9 +27,14 @@ style.textContent = `
         align-items: center;
     }
 
+    .ui-label {
+        background: beige;
+    }
+
     .ui-value {
         min-width: 48px;
         text-align: right;
+        background: beige;
     }
 
     .ui input[type="range"] {
@@ -44,11 +49,10 @@ style.textContent = `
     .ui-button {
         display: block;
         width: 100%;
-        padding: 8px;
         margin: 10px 0;
 
         border: 1px solid #000;
-        background: #ffffff;
+        background: #faf9f6;
 
         font: inherit;
         text-align: center;
@@ -214,10 +218,9 @@ const toggleButton = document.createElement("button");
 toggleButton.textContent = "x Hide controls";
 toggleButton.style.cssText = `
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 0px;
+    right: 10px;
     z-index: 1001;
-    padding: 8px;
     background: #faf9f6;
     color: #000;
     border: 1px solid #000;
@@ -226,6 +229,11 @@ toggleButton.style.cssText = `
 `;
 
 document.body.appendChild(toggleButton);
+
+export const uiHide = () => {
+    panel.hidden = true;
+    toggleButton.textContent = "☰ Show controls";
+};
 
 const toggle = () => {
     panel.hidden = !panel.hidden;
