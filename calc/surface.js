@@ -1,7 +1,7 @@
 import { initCanvasGl } from "../common.js";
 import { createHeightField, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
-import { uiButton } from "../UI.js";
+import { uiButton, uiSelect } from "../UI.js";
 
 const width = 600;
 const height = 600;
@@ -17,12 +17,31 @@ const uProjection = gl.getUniformLocation(program, "uProjection");
 
 /** @typedef {(x: number, y: number) => number} Surface */
 
-/** @type Surface */
-const fn = (x, z) => Math.sin(2 * x) * Math.cos(2 * z);
+/** @type {Record<string, {fn: Surface, description: string}>} */
+const functions = {
+    wave: {
+        fn: (x, z) => Math.sin(2 * x) * Math.cos(2 * z),
+        description:
+            "A repeating wave with alternating peaks and valleys.",
+    },
+
+    saddle: {
+        fn: (x, z) => 0.5 * (x * x - z * z),
+        description:
+            "A saddle rises in one direction and falls in the other.",
+    },
+
+    gaussian: {
+        fn: (x, z) => 2 * Math.exp(-(x * x + z * z)),
+        description:
+            "A smooth central peak that approaches zero outward.",
+    },
+};
 
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
-let surface = createHeightField(gl, fn);
+let fn = "wave";
+let surface = createHeightField(gl, functions[fn].fn);
 
 let azimuth = 0.75;
 let elevation = 0.45;
@@ -100,6 +119,26 @@ uiButton({
         azimuth = 0.75;
         elevation = 0.45;
         distance = 7.5;
+    },
+});
+
+uiSelect({
+    label: "Function",
+    value: fn,
+    options: [
+        { label: "Wave: sin(2x) cos(2z)", value: "wave" },
+        { label: "Saddle: 0.5(x^2 - z^2)", value: "saddle" },
+        { label: "Gaussian: 2exp(-(x^2+z^2))", value: "gaussian" },
+    ],
+    onChange(value) {
+        fn = value;
+        const selected = functions[value];
+        const nextSurface = createHeightField(gl, selected.fn);
+
+        // @todo cache
+        gl.deleteBuffer(surface.buffer);
+
+        surface = nextSurface;
     },
 });
 

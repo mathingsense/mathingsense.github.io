@@ -81,6 +81,7 @@ style.textContent = `
         display: block;
         width: 100%;
         margin-top: 6px;
+        padding: 5px;
 
         border: 1px solid #000;
         background: #faf9f6;
