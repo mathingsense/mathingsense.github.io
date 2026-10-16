@@ -306,6 +306,70 @@ export const createCubeWireframe = (gl) => {
  * @param {WebGL2RenderingContext} gl
  * @returns {Mesh}
  */
+export const createBasisVectors = (gl) => {
+    /** @type number[] */
+    const vertices = [];
+
+    /**
+     * @param {number[]} start
+     * @param {number[]} end
+     * @param {number[]} color
+     */
+    function addLine(start, end, color) {
+        vertices.push(
+            ...start, ...color,
+            ...end, ...color
+        );
+    }
+
+    const origin = [0, 0, 0];
+    const length = 1.5;
+    const headLength = 0.18;
+    const headWidth = 0.10;
+
+    // X axis: red
+    const red = [1.0, 0.2, 0.2];
+    addLine(origin, [length, 0, 0], red);
+    addLine(
+        [length - headLength, headWidth, 0],
+        [length, 0, 0], red
+    );
+    addLine(
+        [length - headLength, -headWidth, 0],
+        [length, 0, 0], red
+    );
+
+    // Y axis: green
+    const green = [0.2, 1.0, 0.35];
+    addLine(origin, [0, length, 0], green);
+    addLine(
+        [headWidth, length - headLength, 0],
+        [0, length, 0], green
+    );
+    addLine(
+        [-headWidth, length - headLength, 0],
+        [0, length, 0], green
+    );
+
+    // Z axis: blue
+    const blue = [0.25, 0.55, 1.0];
+    addLine(origin, [0, 0, length], blue);
+    addLine(
+        [0, headWidth, length - headLength],
+        [0, 0, length], blue
+    );
+    addLine(
+        [0, -headWidth, length - headLength],
+        [0, 0, length], blue
+    );
+
+    return createMesh(gl, vertices, gl.LINES);
+}
+
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @returns {Mesh}
+ */
 export const createGridAndAxes = (gl) => {
     /** @type {number[]} */
     const vertices = [];

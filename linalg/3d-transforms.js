@@ -1,5 +1,5 @@
 import { getElement, initCanvasGl } from "../common.js";
-import { createCube, createCubeWireframe, createGridAndAxes, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createBasisVectors, createCube, createCubeWireframe, createGridAndAxes, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
 import { uiButton, uiSlider } from "../UI.js";
 
@@ -115,6 +115,7 @@ window.addEventListener("resize", () => {
 const cube = createCube(gl);
 const originalWireframe = createCubeWireframe(gl);
 const gridAndAxes = createGridAndAxes(gl);
+const basisVectors = createBasisVectors(gl);
 
 let model = M4.identity();
 
@@ -247,6 +248,7 @@ const render = () => {
     gl.depthMask(true);
 
     drawMesh(cube, model, view, proj);
+    drawMesh(basisVectors, model, view, proj);
 
     requestAnimationFrame(render);
 };
