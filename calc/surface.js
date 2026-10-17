@@ -144,7 +144,8 @@ function updateTangentInfo(plane) {
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
 let fn = "wave";
-let surfaceData = createHeightField(gl, functions[fn].fn);
+let activeFn = functions[fn].fn;
+let surfaceData = createHeightField(gl, activeFn);
 
 /** @type Mesh | null */
 let tangentMesh = null;
@@ -178,7 +179,7 @@ function updateTangentMeshes(fn) {
     tangentVectorsMesh = createTangentVectors(gl, plane);
     // pointMesh = createPointMarker(gl, plane.point);
 }
-updateTangentMeshes(functions[fn].fn);
+updateTangentMeshes(activeFn);
 
 
 let azimuth = 0.75;
@@ -270,15 +271,15 @@ uiSelect({
     ],
     onChange(value) {
         fn = value;
-        const selected = functions[value];
-        const nextSurface = createHeightField(gl, selected.fn);
+        activeFn = functions[value].fn;
+        const nextSurface = createHeightField(gl, activeFn);
 
         // @todo cache
         gl.deleteBuffer(surfaceData.surface.buffer);
         gl.deleteBuffer(surfaceData.wireframe.buffer);
 
         surfaceData = nextSurface;
-        updateTangentMeshes(functions[fn].fn);
+        updateTangentMeshes(activeFn);
     },
 });
 
@@ -290,7 +291,7 @@ uiSlider({
     value: 0.5,
     onChange(value) {
         point.x = value;
-        updateTangentMeshes(functions[fn].fn);
+        updateTangentMeshes(activeFn);
     },
 });
 
@@ -302,7 +303,7 @@ uiSlider({
     value: 0.5,
     onChange(value) {
         point.z = value;
-        updateTangentMeshes(functions[fn].fn);
+        updateTangentMeshes(activeFn);
     },
 });
 
@@ -360,7 +361,13 @@ const render = () => {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.useProgram(program);
 
-    orbitView(azimuth, elevation, distance, view);
+    const target = [
+        point.x,
+        activeFn(point.x, point.z),
+        point.z
+    ];
+
+    orbitView(azimuth, elevation, distance, view, target);
 
     if (display !== "wireframe") {
         if (display === "both") {

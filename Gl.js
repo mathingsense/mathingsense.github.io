@@ -212,15 +212,25 @@ export const lookAt = (eye, center, up, out = new Float32Array(16)) => {
  * @param {number} elevation
  * @param {number} distance
  * @param {Float32Array} [out]
+ * @param {number[]} target
  * @returns {Float32Array}
  */
-export const orbitView = (azimuth, elevation, distance, out = new Float32Array(16)) => {
+export const orbitView = (
+    azimuth,
+    elevation,
+    distance,
+    out = new Float32Array(16),
+    target = [0, 0, 0]
+) => {
+    const [tx, ty, tz] = target;
+
     const eye = [
-        distance * Math.cos(elevation) * Math.sin(azimuth),
-        distance * Math.sin(elevation),
-        distance * Math.cos(elevation) * Math.cos(azimuth),
+        tx + distance * Math.cos(elevation) * Math.sin(azimuth),
+        ty + distance * Math.sin(elevation),
+        tz + distance * Math.cos(elevation) * Math.cos(azimuth),
     ];
-    return lookAt(eye, [0, 0, 0], [0, 1, 0], out);
+
+    return lookAt(eye, target, [0, 1, 0], out);
 };
 
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
