@@ -317,6 +317,7 @@ toggleButton.style.cssText = `
     position: fixed;
     top: 0px;
     right: 10px;
+    width: 280px;
     z-index: 1001;
     background: #faf9f6;
     color: #000;
@@ -361,3 +362,23 @@ window.addEventListener("keydown", (event) => {
         toggle();
     }
 });
+
+const initControl = () => {
+    const vv = window.visualViewport;
+    if (vv === null) return;
+
+    // This is to make the control panel fixed to viewport when zooming-in in mobile.
+    const update = () => {
+        panel.style.left = `${vv.offsetLeft + vv.width - panel.offsetWidth - 10}px`;
+        panel.style.top = `${vv.offsetTop + 40}px`;
+
+        toggleButton.style.left = `${vv.offsetLeft + vv.width - toggleButton.offsetWidth - 10}px`;
+        toggleButton.style.top = `${vv.offsetTop}px`;
+    };
+
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+};
+
+initControl();
