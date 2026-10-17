@@ -41,7 +41,7 @@ const functions = {
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
 let fn = "wave";
-let surface = createHeightField(gl, functions[fn].fn);
+let surfaceData = createHeightField(gl, functions[fn].fn);
 
 let azimuth = 0.75;
 let elevation = 0.45;
@@ -136,9 +136,10 @@ uiSelect({
         const nextSurface = createHeightField(gl, selected.fn);
 
         // @todo cache
-        gl.deleteBuffer(surface.buffer);
+        gl.deleteBuffer(surfaceData.surface.buffer);
+        gl.deleteBuffer(surfaceData.wireframe.buffer);
 
-        surface = nextSurface;
+        surfaceData = nextSurface;
     },
 });
 
@@ -179,7 +180,8 @@ const render = () => {
 
     orbitView(azimuth, elevation, distance, view);
 
-    drawMesh(surface, model, view, proj);
+    drawMesh(surfaceData.surface, model, view, proj);
+    drawMesh(surfaceData.wireframe, model, view, proj);
     requestAnimationFrame(render);
 };
 render();

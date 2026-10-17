@@ -485,53 +485,110 @@ export const resizeCanvas = (canvas, gl) => {
  * @param {(x: number, z: number) => number} fn
  * @param {number} segments
  * @param {number} size
- * @returns {Mesh}
+ * @returns {{
+ *   surface: Mesh,
+ *   wireframe: Mesh,
+ *   minHeight: number,
+ *   maxHeight: number
+ * }}
  */
-export const createHeightField = (
-    gl,
-    fn,
-    segments = 100,
-    size = 4
-) => {
-    /** @type number[] */
-    const vertices = [];
+export const createHeightField = (gl, fn, segments = 100, size = 4) => {
+    const samples = [];
+    let minHeight = Infinity;
+    let maxHeight = -Infinity;
+
     const step = size / segments;
     const half = size / 2;
 
+    // Sample the function first, so we know its height range.
+    for (let j = 0; j <= segments; j++) {
+        const row = [];
+
+        for (let i = 0; i <= segments; i++) {
+            const x = -half + i * step;
+            const z = -half + j * step;
+            const y = fn(x, z);
+
+            row.push({ x, y, z });
+
+            minHeight = Math.min(minHeight, y);
+            maxHeight = Math.max(maxHeight, y);
+        }
+
+        samples.push(row);
+    }
+
+    /** @type number[] */
+    const triangles = [];
+
+    /** @type number[] */
+    const lines = [];
+
+    // Normalize the height to [0, 1].
+    const range = maxHeight - minHeight;
+
     /**
-     * @param {number} x
-     * @param {number} z
+     * @param {number[]} target
+     * @param {number[]} [color]
+     * @param {*} p
      */
-    function addVertex(x, z) {
-        const y = fn(x, z);
+    function addVertex(target, p, color) {
+        const t = range > 1e-7
+            ? (p.y - minHeight) / range
+            : 0.5;
 
-        // Map height to a blue-to-red color gradient.
-        const t = Math.max(0, Math.min(1, (y + 1) / 2));
+        // Blue at the bottom, red at the top.
+        const r = color ? color[0] : t;
+        const g = color ? color[1] : 0.25;
+        const b = color ? color[2] : 1 - t;
 
-        vertices.push(
-            x, y, z,
-            t, 0.25, 1 - t
+        target.push(
+            p.x, p.y, p.z,
+            r, g, b
         );
     }
 
+    const wireColor = [0.08, 0.09, 0.12];
+
     for (let j = 0; j < segments; j++) {
         for (let i = 0; i < segments; i++) {
-            const x0 = -half + i * step;
-            const x1 = x0 + step;
-            const z0 = -half + j * step;
-            const z1 = z0 + step;
+            const a = samples[j][i];
+            const b = samples[j][i + 1];
+            const c = samples[j + 1][i];
+            const d = samples[j + 1][i + 1];
 
-            // First triangle
-            addVertex(x0, z0);
-            addVertex(x0, z1);
-            addVertex(x1, z0);
+            // Two triangles per cell.
+            addVertex(triangles, a);
+            addVertex(triangles, c);
+            addVertex(triangles, b);
 
-            // Second triangle
-            addVertex(x1, z0);
-            addVertex(x0, z1);
-            addVertex(x1, z1);
+            addVertex(triangles, b);
+            addVertex(triangles, c);
+            addVertex(triangles, d);
+
+            // Grid edges
+            addVertex(lines, a, wireColor);
+            addVertex(lines, b, wireColor);
+
+            addVertex(lines, a, wireColor);
+            addVertex(lines, c, wireColor);
         }
     }
 
-    return createMesh(gl, vertices, gl.TRIANGLES);
-};
+    // Add the far boundaries of the grid.
+    for (let i = 0; i < segments; i++) {
+        addVertex(lines, samples[segments][i], wireColor);
+        addVertex(lines, samples[segments][i + 1], wireColor);
+
+        addVertex(lines, samples[i][segments], wireColor);
+        addVertex(lines, samples[i + 1][segments], wireColor);
+
+    }
+
+    return {
+        surface: createMesh(gl, triangles, gl.TRIANGLES),
+        wireframe: createMesh(gl, lines, gl.LINES),
+        minHeight,
+        maxHeight,
+    };
+}
