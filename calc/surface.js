@@ -1,4 +1,4 @@
-import { initCanvasGl } from "../common.js";
+import { getElement, initCanvasGl } from "../common.js";
 import { createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
@@ -7,6 +7,12 @@ const width = 600;
 const height = 600;
 
 const [canvas, gl] = initCanvasGl("canvas", width, height);
+
+const pointCoordinates = getElement("point-coordinates", HTMLSpanElement);
+const derivativeX = getElement("derivative-x", HTMLSpanElement);
+const derivativeZ = getElement("derivative-z", HTMLSpanElement);
+const planeEquation = getElement("plane-equation", HTMLSpanElement);
+
 
 const tangentFragmentShader = `#version 300 es
     precision highp float;
@@ -104,6 +110,26 @@ const tangentPlane = (fn, x, z) => {
     };
 }
 
+function updateTangentInfo(plane) {
+    const { x, y, z } = plane.point;
+
+    pointCoordinates.textContent =
+        `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`;
+
+    derivativeX.textContent = plane.dx.toFixed(3);
+    derivativeZ.textContent = plane.dz.toFixed(3);
+
+    const formatTerm = (value, variable, point) => {
+        const sign = value < 0 ? "-" : "+";
+        return ` ${sign} ${Math.abs(value).toFixed(3)}(${variable} - ${point.toFixed(2)})`;
+    };
+
+    planeEquation.textContent =
+        `y = ${y.toFixed(3)}` +
+        formatTerm(plane.dx, "x", x) +
+        formatTerm(plane.dz, "z", z);
+}
+
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
 let fn = "wave";
@@ -129,6 +155,7 @@ function updateTangentMeshes(fn) {
     }
 
     const plane = tangentPlane(fn, point.x, point.z);
+    updateTangentInfo(plane);
 
     tangentMesh = createTangentPlaneMesh(gl, plane, 1);
     pointMesh = createPointMarker(gl, plane.point);
@@ -238,7 +265,7 @@ uiSelect({
 });
 
 uiSlider({
-    label: "Point x",
+    label: "x",
     min: -2,
     max: 2,
     step: 0.1,
@@ -250,7 +277,7 @@ uiSlider({
 });
 
 uiSlider({
-    label: "Point z",
+    label: "z",
     min: -2,
     max: 2,
     step: 0.1,
