@@ -3,10 +3,10 @@ const style = document.createElement("style");
 style.textContent = `
     .ui {
         position: fixed;
-        top: 40px;
+        top: 0;
         right: 10px;
         width: 280px;
-        padding: 10px;
+        padding: 0px;
         box-sizing: border-box;
 
         color: #000;
@@ -21,7 +21,43 @@ style.textContent = `
         box-sizing: border-box;
     }
 
-    .ui-header {
+    .ui-panel-header {
+        padding: 0px 5px;
+        background: wheat;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ui-content {
+        padding-top: 10px;
+    }
+
+    .ui-section {
+        margin: 8px 0;
+        overflow: hidden;
+    }
+
+    .ui-section-title {
+        padding: 0px 5px;
+        background: antiquewhite;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ui-section-body {
+        padding: 10px 0;
+    }
+
+    .ui-section-body > :last-child {
+        margin-bottom: 0;
+    }
+
+
+    .ui-slider {
+        margin: 0 10px 10px 10px;
+    }
+
+    .ui-slider-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -48,8 +84,8 @@ style.textContent = `
 
     .ui-button {
         display: block;
-        width: 100%;
-        margin: 10px 0;
+        width: 260px;
+        margin: 10px;
 
         border: 1px solid #000;
         background: #faf9f6;
@@ -74,7 +110,7 @@ style.textContent = `
     }
 
     .ui-select-control {
-        margin: 0;
+        margin: 10px;
     }
 
     .ui-select {
@@ -97,10 +133,62 @@ style.textContent = `
 
 document.head.appendChild(style);
 
-const panel = document.createElement("aside");
+const panel = document.createElement("details");
 panel.className = "ui";
+panel.open = true;
 
+const panelHeader = document.createElement("summary");
+panelHeader.className = "ui-panel-header";
+
+const panelTitle = document.createElement("span");
+panelTitle.className = "ui-title";
+panelTitle.textContent = "Controls";
+
+const panelContent = document.createElement("div");
+panelContent.className = "ui-content";
+
+panelHeader.appendChild(panelTitle);
+panel.append(panelHeader, panelContent);
 document.body.appendChild(panel);
+
+// Default destination for newly created controls.
+let activeContainer = panelContent;
+
+
+/**
+ * Create a collapsible section and build its controls.
+ * @param {string} label
+ * @param {() => void} build
+ * @param {boolean} [open]
+ * @returns {HTMLDetailsElement}
+ */
+export const uiSection = (label, build, open = true) => {
+    const section = document.createElement("details");
+    section.className = "ui-section";
+    section.open = open;
+
+    const summary = document.createElement("summary");
+    summary.className = "ui-section-title";
+    summary.textContent = label;
+
+    const body = document.createElement("div");
+    body.className = "ui-section-body";
+
+    section.append(summary, body);
+    activeContainer.appendChild(section);
+
+    // Temporarily route new controls into this section.
+    const previousContainer = activeContainer;
+    activeContainer = body;
+
+    try {
+        build();
+    } finally {
+        activeContainer = previousContainer;
+    }
+
+    return section;
+}
 
 
 /**
@@ -129,10 +217,10 @@ export const uiSlider = ({
     onChange,
 }) => {
     const container = document.createElement("div");
-    container.className = "ui-control";
+    container.className = "ui-slider";
 
     const header = document.createElement("div");
-    header.className = "ui-header";
+    header.className = "ui-slider-header";
 
     const name = document.createElement("label");
     name.className = "ui-label";
@@ -161,7 +249,7 @@ export const uiSlider = ({
 
     header.append(name, output);
     container.append(header, input);
-    panel.appendChild(container);
+    activeContainer.appendChild(container);
 
     update();
 
@@ -210,7 +298,7 @@ export const uiButton = ({
     button.disabled = disabled;
 
     button.addEventListener("click", onClick);
-    panel.appendChild(button);
+    activeContainer.appendChild(button);
 
     return {
         element: button,
@@ -288,7 +376,7 @@ export function uiSelect({
     });
 
     container.append(name, select);
-    panel.appendChild(container);
+    activeContainer.appendChild(container);
 
     return {
         element: select,
@@ -309,44 +397,13 @@ export function uiSelect({
 
 uiSelect.nextId = 0;
 
-
-const toggleButton = document.createElement("button");
-
-toggleButton.textContent = "x Hide controls";
-toggleButton.style.cssText = `
-    position: fixed;
-    top: 0px;
-    right: 10px;
-    width: 280px;
-    z-index: 1001;
-    background: #faf9f6;
-    color: #000;
-    border: 1px solid #000;
-    font-size: 14px;
-    cursor: pointer;
-`;
-
-document.body.appendChild(toggleButton);
-
 export const uiHide = () => {
-    panel.hidden = true;
-    toggleButton.textContent = "☰ Show controls";
+    panel.open = false;
 };
 
 const toggle = () => {
-    panel.hidden = !panel.hidden;
+    panel.open = !panel.open;
 };
-
-const isVisible = () => {
-    return !panel.hidden;
-};
-
-toggleButton.addEventListener("click", () => {
-    toggle();
-    toggleButton.textContent = isVisible()
-        ? "x Hide controls"
-        : "☰ Show controls";
-});
 
 window.addEventListener("keydown", (event) => {
     // Don't intercept shortcuts while typing in an input.
@@ -369,11 +426,8 @@ const initControl = () => {
 
     // This is to make the control panel fixed to viewport when zooming-in in mobile.
     const update = () => {
-        panel.style.left = `${vv.offsetLeft + vv.width - panel.offsetWidth - 10}px`;
-        panel.style.top = `${vv.offsetTop + 40}px`;
-
-        toggleButton.style.left = `${vv.offsetLeft + vv.width - toggleButton.offsetWidth - 10}px`;
-        toggleButton.style.top = `${vv.offsetTop}px`;
+        panel.style.left = vv.offsetLeft + vv.width - panel.offsetWidth - 10 + "px";
+        panel.style.top = vv.offsetTop + "px";
     };
 
     vv.addEventListener("resize", update);
