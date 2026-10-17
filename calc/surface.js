@@ -1,5 +1,7 @@
+// TODO: clean up, refactor
+
 import { getElement, initCanvasGl } from "../common.js";
-import { createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createHeightField, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
@@ -110,6 +112,9 @@ const tangentPlane = (fn, x, z) => {
     };
 }
 
+/**
+ * @param {*} plane
+ */
 function updateTangentInfo(plane) {
     const { x, y, z } = plane.point;
 
@@ -119,6 +124,12 @@ function updateTangentInfo(plane) {
     derivativeX.textContent = plane.dx.toFixed(3);
     derivativeZ.textContent = plane.dz.toFixed(3);
 
+    /**
+     * @param {number} value
+     * @param {string} variable
+     * @param {number} point
+     * @returns {string}
+     */
     const formatTerm = (value, variable, point) => {
         const sign = value < 0 ? "-" : "+";
         return ` ${sign} ${Math.abs(value).toFixed(3)}(${variable} - ${point.toFixed(2)})`;
@@ -137,8 +148,12 @@ let surfaceData = createHeightField(gl, functions[fn].fn);
 
 /** @type Mesh | null */
 let tangentMesh = null;
+
 /** @type Mesh | null */
 let pointMesh = null;
+
+/** @type Mesh | null */
+let tangentVectorsMesh = null;
 
 let point = { x: 0, z: 0 };
 
@@ -149,16 +164,19 @@ function updateTangentMeshes(fn) {
     if (tangentMesh) {
         gl.deleteBuffer(tangentMesh.buffer);
     }
-
     if (pointMesh) {
         gl.deleteBuffer(pointMesh.buffer);
+    }
+    if (tangentVectorsMesh) {
+        gl.deleteBuffer(tangentVectorsMesh.buffer);
     }
 
     const plane = tangentPlane(fn, point.x, point.z);
     updateTangentInfo(plane);
 
     tangentMesh = createTangentPlaneMesh(gl, plane, 1);
-    pointMesh = createPointMarker(gl, plane.point);
+    tangentVectorsMesh = createTangentVectors(gl, plane);
+    // pointMesh = createPointMarker(gl, plane.point);
 }
 updateTangentMeshes(functions[fn].fn);
 
@@ -359,11 +377,14 @@ const render = () => {
         drawMesh(surfaceData.wireframe, model, view, proj, program, surfaceUniforms);
     }
 
-    if (tangentMesh && pointMesh) {
+    if (tangentMesh) {
         drawMesh(tangentMesh, model, view, proj, tangentProgram, tangentUniforms);
-        // drawMesh(tangentMesh, model, view, proj, program);
-
-        drawMesh(pointMesh, model, view, proj, program, surfaceUniforms);
+    }
+    if (pointMesh) {
+        // drawMesh(pointMesh, model, view, proj, program, surfaceUniforms);
+    }
+    if (tangentVectorsMesh) {
+        drawMesh(tangentVectorsMesh, model, view, proj, program, surfaceUniforms);
     }
     requestAnimationFrame(render);
 };

@@ -641,7 +641,7 @@ export const createTangentPlaneMesh = (gl, plane, size = 1) => {
  * @param {number} [radius]
  * @returns {Mesh}
  */
-export function createPointMarker(gl, point, radius = 0.08) {
+export function createPointMarker(gl, point, radius = 0.5) {
     const { x, y, z } = point;
     const r = radius;
     const color = [1.0, 0.2, 0.15];
@@ -661,6 +661,61 @@ export function createPointMarker(gl, point, radius = 0.08) {
 
     for (const p of lines) {
         vertices.push(...p, ...color);
+    }
+
+    return createMesh(gl, vertices, gl.LINES);
+}
+
+
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @param {*} plane
+ * @param {number} [length]
+ * @returns {Mesh}
+ */
+export function createTangentVectors(gl, plane, length = 2) {
+    const { x, y, z } = plane.point;
+
+    const normalLength = Math.hypot(plane.dx, 1, plane.dz);
+    const epsilon = 0.015;
+
+    const offsetX = (-plane.dx / normalLength) * epsilon;
+    const offsetY = (1 / normalLength) * epsilon;
+    const offsetZ = (-plane.dz / normalLength) * epsilon;
+
+    const vectors = [
+        {
+            direction: [1, plane.dx, 0],
+            color: [0.0, 0.0, 0.0]
+        },
+        {
+            direction: [0, plane.dz, 1],
+            color: [0.0, 0.0, 0.0]
+        }
+    ];
+
+    const vertices = [];
+
+    for (const { direction, color } of vectors) {
+        const [dx, dy, dz] = direction;
+
+        // Normalize the direction so both vectors have the same displayed length.
+        const magnitude = Math.hypot(dx, dy, dz);
+        const sx = (dx / magnitude) * length;
+        const sy = (dy / magnitude) * length;
+        const sz = (dz / magnitude) * length;
+
+        vertices.push(
+            x + offsetX,
+            y + offsetY,
+            z + offsetZ,
+            ...color,
+
+            x + offsetZ + sx,
+            y + offsetY + sy,
+            z + offsetZ + sz,
+            ...color
+        );
     }
 
     return createMesh(gl, vertices, gl.LINES);
