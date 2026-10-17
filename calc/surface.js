@@ -143,6 +143,22 @@ uiSelect({
     },
 });
 
+let display = "surface";
+
+uiSelect({
+    label: "Display",
+    value: display,
+    options: [
+        { label: "Surface", value: "surface" },
+        { label: "Wireframe", value: "wireframe" },
+        { label: "Both", value: "both" },
+    ],
+    onChange(value) {
+        fn = value;
+        display = value;
+    },
+});
+
 /**
  * @param {Mesh} mesh
  * @param {Float32Array} model
@@ -180,8 +196,20 @@ const render = () => {
 
     orbitView(azimuth, elevation, distance, view);
 
-    drawMesh(surfaceData.surface, model, view, proj);
-    drawMesh(surfaceData.wireframe, model, view, proj);
+    if (display !== "wireframe") {
+        if (display === "both") {
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.polygonOffset(1, 1);
+        }
+        drawMesh(surfaceData.surface, model, view, proj);
+
+        if (display === "both") {
+            gl.disable(gl.POLYGON_OFFSET_FILL);
+        }
+    }
+    if (display !== "surface") {
+        drawMesh(surfaceData.wireframe, model, view, proj);
+    }
     requestAnimationFrame(render);
 };
 render();
