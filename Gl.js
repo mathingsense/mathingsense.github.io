@@ -592,3 +592,76 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
         maxHeight,
     };
 }
+
+
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @param {*} plane
+ * @param {number} [size]
+ * @returns {Mesh}
+ */
+export const createTangentPlaneMesh = (gl, plane, size = 1) => {
+    const { x, z } = plane.point;
+
+    const x0 = x - size;
+    const x1 = x + size;
+    const z0 = z - size;
+    const z1 = z + size;
+
+    /**
+     * @param {number} px
+     * @param {number} pz
+     */
+    function vertex(px, pz) {
+        return [
+            px,
+            plane.heightAt(px, pz),
+            pz,
+            1.0, 0.65, 0.15
+        ];
+    }
+
+    const a = vertex(x0, z0);
+    const b = vertex(x1, z0);
+    const c = vertex(x1, z1);
+    const d = vertex(x0, z1);
+
+    const triangles = [
+        ...a, ...b, ...c,
+        ...a, ...c, ...d
+    ];
+
+    return createMesh(gl, triangles, gl.TRIANGLES);
+}
+
+
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @param {*} point
+ * @param {number} [radius]
+ * @returns {Mesh}
+ */
+export function createPointMarker(gl, point, radius = 0.08) {
+    const { x, y, z } = point;
+    const r = radius;
+    const color = [1.0, 0.2, 0.15];
+
+    const lines = [
+        [x - r, y, z],
+        [x + r, y, z],
+
+        [x, y - r, z],
+        [x, y + r, z],
+
+        [x, y, z - r],
+        [x, y, z + r]
+    ];
+
+    const vertices = [];
+
+    for (const p of lines) {
+        vertices.push(...p, ...color);
+    }
+
+    return createMesh(gl, vertices, gl.LINES);
+}

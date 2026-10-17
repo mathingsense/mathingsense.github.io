@@ -1,19 +1,46 @@
 import { initCanvasGl } from "../common.js";
-import { createHeightField, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { fs, vs } from "../shaders.js";
-import { uiButton, uiSelect } from "../UI.js";
+import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
 const width = 600;
 const height = 600;
 
 const [canvas, gl] = initCanvasGl("canvas", width, height);
 
+const tangentFragmentShader = `#version 300 es
+    precision highp float;
+
+    in vec3 vColor;
+    out vec4 outColor;
+
+    void main() {
+        outColor = vec4(vColor, 0.35);
+    }
+`;
+
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
 const program = createProgram(gl, vs, fs);
+const tangentProgram = createProgram(gl, vs, tangentFragmentShader);
 gl.useProgram(program);
 
-const uModel = gl.getUniformLocation(program, "uModel");
-const uView = gl.getUniformLocation(program, "uView");
-const uProjection = gl.getUniformLocation(program, "uProjection");
+/**
+ * @param {WebGL2RenderingContext} gl
+ * @param {WebGLProgram} program
+ * @returns
+ */
+const getUniforms = (gl, program) => {
+    return {
+        model: gl.getUniformLocation(program, "uModel"),
+        view: gl.getUniformLocation(program, "uView"),
+        projection: gl.getUniformLocation(program, "uProjection"),
+    };
+}
+
+const surfaceUniforms = getUniforms(gl, program);
+const tangentUniforms = getUniforms(gl, tangentProgram);
 
 /** @typedef {(x: number, y: number) => number} Surface */
 
@@ -38,10 +65,76 @@ const functions = {
     },
 };
 
+/**
+ * @param {Surface} fn
+ * @param {number} x
+ * @param {number} z
+ * @param {number} h
+ * @returns {{dx: number, dz: number}}
+ */
+const partialDerivatives = (fn, x, z, h = 0.001) => {
+    const dx = (fn(x + h, z) - fn(x - h, z)) / (2 * h);
+    const dz = (fn(x, z + h) - fn(x, z - h)) / (2 * h);
+
+    return { dx, dz };
+}
+
+
+/**
+ * @param {Surface} fn
+ * @param {number} x
+ * @param {number} z
+ * @returns
+ */
+const tangentPlane = (fn, x, z) => {
+    const y = fn(x, z);
+    const { dx, dz } = partialDerivatives(fn, x, z);
+
+    return {
+        point: { x, y, z },
+        dx,
+        dz,
+        /**
+         * @param {number} px
+         * @param {number} pz
+         */
+        heightAt(px, pz) {
+            return y + dx * (px - x) + dz * (pz - z);
+        }
+    };
+}
+
 /** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
 
 let fn = "wave";
 let surfaceData = createHeightField(gl, functions[fn].fn);
+
+/** @type Mesh | null */
+let tangentMesh = null;
+/** @type Mesh | null */
+let pointMesh = null;
+
+let point = { x: 0, z: 0 };
+
+/**
+ * @param {Surface} fn
+ */
+function updateTangentMeshes(fn) {
+    if (tangentMesh) {
+        gl.deleteBuffer(tangentMesh.buffer);
+    }
+
+    if (pointMesh) {
+        gl.deleteBuffer(pointMesh.buffer);
+    }
+
+    const plane = tangentPlane(fn, point.x, point.z);
+
+    tangentMesh = createTangentPlaneMesh(gl, plane, 1);
+    pointMesh = createPointMarker(gl, plane.point);
+}
+updateTangentMeshes(functions[fn].fn);
+
 
 let azimuth = 0.75;
 let elevation = 0.45;
@@ -140,6 +233,31 @@ uiSelect({
         gl.deleteBuffer(surfaceData.wireframe.buffer);
 
         surfaceData = nextSurface;
+        updateTangentMeshes(functions[fn].fn);
+    },
+});
+
+uiSlider({
+    label: "Point x",
+    min: -2,
+    max: 2,
+    step: 0.1,
+    value: 0.5,
+    onChange(value) {
+        point.x = value;
+        updateTangentMeshes(functions[fn].fn);
+    },
+});
+
+uiSlider({
+    label: "Point z",
+    min: -2,
+    max: 2,
+    step: 0.1,
+    value: 0.5,
+    onChange(value) {
+        point.z = value;
+        updateTangentMeshes(functions[fn].fn);
     },
 });
 
@@ -164,8 +282,11 @@ uiSelect({
  * @param {Float32Array} model
  * @param {Float32Array} view
  * @param {Float32Array} projection
+ * @param {WebGLProgram} program
+ * @param {*} uniforms
  */
-const drawMesh = (mesh, model, view, projection) => {
+const drawMesh = (mesh, model, view, projection, program, uniforms) => {
+    gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
 
     gl.enableVertexAttribArray(0);
@@ -174,9 +295,9 @@ const drawMesh = (mesh, model, view, projection) => {
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
 
-    gl.uniformMatrix4fv(uModel, false, model);
-    gl.uniformMatrix4fv(uView, false, view);
-    gl.uniformMatrix4fv(uProjection, false, projection);
+    gl.uniformMatrix4fv(uniforms.model, false, model);
+    gl.uniformMatrix4fv(uniforms.view, false, view);
+    gl.uniformMatrix4fv(uniforms.projection, false, projection);
 
     gl.drawArrays(mesh.mode, 0, mesh.count);
 };
@@ -201,14 +322,21 @@ const render = () => {
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(1, 1);
         }
-        drawMesh(surfaceData.surface, model, view, proj);
+        drawMesh(surfaceData.surface, model, view, proj, program, surfaceUniforms);
 
         if (display === "both") {
             gl.disable(gl.POLYGON_OFFSET_FILL);
         }
     }
     if (display !== "surface") {
-        drawMesh(surfaceData.wireframe, model, view, proj);
+        drawMesh(surfaceData.wireframe, model, view, proj, program, surfaceUniforms);
+    }
+
+    if (tangentMesh && pointMesh) {
+        drawMesh(tangentMesh, model, view, proj, tangentProgram, tangentUniforms);
+        // drawMesh(tangentMesh, model, view, proj, program);
+
+        drawMesh(pointMesh, model, view, proj, program, surfaceUniforms);
     }
     requestAnimationFrame(render);
 };
