@@ -61,6 +61,19 @@ export class M4 {
     }
 
     /**
+     * @param {number} tx
+     * @param {number} ty
+     * @param {number} [tz]
+     */
+    static translation(tx, ty, tz = 0) {
+        const matrix = M4.identity();
+        matrix[12] = tx;
+        matrix[13] = ty;
+        matrix[14] = tz;
+        return matrix;
+    }
+
+    /**
      * @param {number} sx
      * @param {number} sy
      * @param {number} sz
@@ -237,24 +250,30 @@ export const orbitView = (
 
 /**
  * @param {WebGL2RenderingContext} gl
- * @param {number[]} data
+ * @param {number[] | Float32Array} data
  * @param {number} mode
  * @param {number} [strideFloats]
+ * @param {number} [usage]
  * @returns {Mesh}
  */
-export const createMesh = (gl, data, mode, strideFloats = 6) => {
+export const createMesh = (
+    gl,
+    data,
+    mode,
+    strideFloats = 6,
+    usage = gl.STATIC_DRAW
+) => {
     const buffer = gl.createBuffer();
+    const typed = data instanceof Float32Array
+        ? data
+        : new Float32Array(data);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(data),
-        gl.STATIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, typed, usage);
 
     return {
         buffer,
-        count: data.length / strideFloats,
+        count: typed.length / strideFloats,
         mode,
         strideFloats,
     };
