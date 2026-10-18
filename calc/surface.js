@@ -1,8 +1,9 @@
 // TODO: clean up, refactor
 
+import { tangentPlane } from "../Calculus.js";
 import { getElement, initCanvasGl } from "../common.js";
 import { createHeightField, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
-import { fs, vs } from "../shaders.js";
+import { vs, fs, litVs, litFs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
 const width = 600;
@@ -31,6 +32,7 @@ gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 const program = createProgram(gl, vs, fs);
+const litPorgram = createProgram(gl, litVs, litFs);
 const tangentProgram = createProgram(gl, vs, tangentFragmentShader);
 gl.useProgram(program);
 
@@ -48,6 +50,7 @@ const getUniforms = (gl, program) => {
 }
 
 const surfaceUniforms = getUniforms(gl, program);
+const litUniforms = getUniforms(gl, litPorgram);
 const tangentUniforms = getUniforms(gl, tangentProgram);
 
 /** @typedef {(x: number, y: number) => number} Surface */
@@ -93,44 +96,6 @@ const functions = {
     },
 };
 
-/**
- * @param {Surface} fn
- * @param {number} x
- * @param {number} z
- * @param {number} h
- * @returns {{dx: number, dz: number}}
- */
-const partialDerivatives = (fn, x, z, h = 0.001) => {
-    const dx = (fn(x + h, z) - fn(x - h, z)) / (2 * h);
-    const dz = (fn(x, z + h) - fn(x, z - h)) / (2 * h);
-
-    return { dx, dz };
-}
-
-
-/**
- * @param {Surface} fn
- * @param {number} x
- * @param {number} z
- * @returns
- */
-const tangentPlane = (fn, x, z) => {
-    const y = fn(x, z);
-    const { dx, dz } = partialDerivatives(fn, x, z);
-
-    return {
-        point: { x, y, z },
-        dx,
-        dz,
-        /**
-         * @param {number} px
-         * @param {number} pz
-         */
-        heightAt(px, pz) {
-            return y + dx * (px - x) + dz * (pz - z);
-        }
-    };
-}
 
 /**
  * @param {*} plane
@@ -161,7 +126,7 @@ function updateTangentInfo(plane) {
         formatTerm(plane.dz, "z", z);
 }
 
-/** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
+/** @typedef {{buffer: WebGLBuffer, count: number, mode: number, strideFloats: number}} Mesh */
 
 let fn = "wave";
 let activeFn = functions[fn].fn;
@@ -390,11 +355,22 @@ const drawMesh = (mesh, model, view, projection, program, uniforms) => {
     gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
 
+    const stride = mesh.strideFloats * Float32Array.BYTES_PER_ELEMENT;
+
     gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, stride, 0);
 
     gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
+    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
+
+    if (mesh.strideFloats >= 9) {
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(
+            2, 3, gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT
+        );
+    } else {
+        gl.disableVertexAttribArray(2);
+    }
 
     gl.uniformMatrix4fv(uniforms.model, false, model);
     gl.uniformMatrix4fv(uniforms.view, false, view);
@@ -429,7 +405,7 @@ const render = () => {
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(1, 1);
         }
-        drawMesh(surfaceData.surface, model, view, proj, program, surfaceUniforms);
+        drawMesh(surfaceData.surface, model, view, proj, litPorgram, litUniforms);
 
         if (display === "both") {
             gl.disable(gl.POLYGON_OFFSET_FILL);

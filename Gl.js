@@ -233,15 +233,16 @@ export const orbitView = (
     return lookAt(eye, target, [0, 1, 0], out);
 };
 
-/** @typedef {{buffer: WebGLBuffer, count: number, mode: number}} Mesh */
+/** @typedef {{buffer: WebGLBuffer, count: number, mode: number, strideFloats: number}} Mesh */
 
 /**
  * @param {WebGL2RenderingContext} gl
  * @param {number[]} data
  * @param {number} mode
+ * @param {number} [strideFloats]
  * @returns {Mesh}
  */
-export const createMesh = (gl, data, mode) => {
+export const createMesh = (gl, data, mode, strideFloats = 6) => {
     const buffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -253,8 +254,9 @@ export const createMesh = (gl, data, mode) => {
 
     return {
         buffer,
-        count: data.length / 6,
+        count: data.length / strideFloats,
         mode,
+        strideFloats,
     };
 };
 
@@ -488,6 +490,7 @@ export const resizeCanvas = (canvas, gl) => {
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
+/** @typedef {{x: number, y: number, z: number}} XYZ */
 
 /**
  * Generate a triangle mesh for y = f(x, z)
@@ -503,6 +506,7 @@ export const resizeCanvas = (canvas, gl) => {
  * }}
  */
 export const createHeightField = (gl, fn, segments = 100, size = 4) => {
+    /** @type {{x: number, y: number, z: number, normal?: XYZ}[][]} */
     const samples = [];
     let minHeight = Infinity;
     let maxHeight = -Infinity;
@@ -534,15 +538,16 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
     /** @type number[] */
     const lines = [];
 
-    // Normalize the height to [0, 1].
     const range = maxHeight - minHeight;
 
     /**
      * @param {number[]} target
-     * @param {number[]} [color]
-     * @param {*} p
+     * @param {XYZ} p
+     * @param {number[] | null} [color]
+     * @param {XYZ | null} [normal]
      */
-    function addVertex(target, p, color) {
+    function addVertex(target, p, color, normal = null) {
+        // Normalize the height to [0, 1].
         const t = range > 1e-7
             ? (p.y - minHeight) / range
             : 0.5;
@@ -552,10 +557,36 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
         const g = color ? color[1] : 0.25;
         const b = color ? color[2] : 1 - t;
 
-        target.push(
-            p.x, p.y, p.z,
-            r, g, b
-        );
+        target.push(p.x, p.y, p.z, r, g, b);
+        if (normal) {
+            target.push(normal.x, normal.y, normal.z);
+        }
+    }
+
+    /**
+     * @param {number} x
+     * @param {number} z
+     * @returns {XYZ}
+     */
+    const getNormal = (x, z) => {
+        const h = step * 0.5;
+
+        const dx = (fn(x + h, z) - fn(x - h, z)) / (2 * h);
+        const dz = (fn(x, z + h) - fn(x, z - h)) / (2 * h);
+
+        const length = Math.hypot(dx, 1, dz);
+
+        return {
+            x: -dx / length,
+            y: 1 / length,
+            z: -dz / length,
+        };
+    }
+
+    for (const row of samples) {
+        for (const p of row) {
+            p.normal = getNormal(p.x, p.z);
+        }
     }
 
     const wireColor = [0.08, 0.09, 0.12];
@@ -568,13 +599,13 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
             const d = samples[j + 1][i + 1];
 
             // Two triangles per cell.
-            addVertex(triangles, a);
-            addVertex(triangles, c);
-            addVertex(triangles, b);
+            addVertex(triangles, a, null, a.normal);
+            addVertex(triangles, c, null, c.normal);
+            addVertex(triangles, b, null, b.normal);
 
-            addVertex(triangles, b);
-            addVertex(triangles, c);
-            addVertex(triangles, d);
+            addVertex(triangles, b, null, b.normal);
+            addVertex(triangles, c, null, c.normal);
+            addVertex(triangles, d, null, d.normal);
 
             // Grid edges
             addVertex(lines, a, wireColor);
@@ -596,7 +627,7 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
     }
 
     return {
-        surface: createMesh(gl, triangles, gl.TRIANGLES),
+        surface: createMesh(gl, triangles, gl.TRIANGLES, 9),
         wireframe: createMesh(gl, lines, gl.LINES),
         minHeight,
         maxHeight,
