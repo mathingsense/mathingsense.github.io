@@ -2,7 +2,7 @@
 
 import { tangentPlane } from "../Calculus.js";
 import { getElement, initCanvasGl } from "../common.js";
-import { createGroundGrid, createHeightField, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createGroundGrid, createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { vs, fs, litVs, litFs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
@@ -133,6 +133,11 @@ let activeFn = functions[fn].fn;
 let domainSize = 4;
 let surfaceData = createHeightField(gl, activeFn, 100, domainSize);
 let groundGrid = createGroundGrid(gl, domainSize, 10);
+const originMarker = createPointMarker(
+    gl,
+    { x: 0, y: 0, z: 0 },
+    0.5
+);
 
 function rebuildSurface() {
     gl.deleteBuffer(surfaceData.surface.buffer);
@@ -405,6 +410,7 @@ const render = () => {
     orbitView(azimuth, elevation, distance, view, target);
 
     drawMesh(groundGrid, model, view, proj, program, surfaceUniforms);
+    drawMesh(originMarker, model, view, proj, program, surfaceUniforms);
 
     if (display !== "wireframe") {
         if (display === "both") {

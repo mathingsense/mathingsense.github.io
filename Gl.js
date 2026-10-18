@@ -727,7 +727,7 @@ export const createTangentPlaneMesh = (gl, plane, size = 1) => {
 
 /**
  * @param {WebGL2RenderingContext} gl
- * @param {*} point
+ * @param {XYZ} point
  * @param {number} [radius]
  * @returns {Mesh}
  */
