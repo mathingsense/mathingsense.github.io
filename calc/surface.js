@@ -145,7 +145,17 @@ function updateTangentInfo(plane) {
 
 let fn = "wave";
 let activeFn = functions[fn].fn;
-let surfaceData = createHeightField(gl, activeFn);
+let domainSize = 4;
+let surfaceData = createHeightField(gl, activeFn, 100, domainSize);
+
+function rebuildSurface() {
+    gl.deleteBuffer(surfaceData.surface.buffer);
+    gl.deleteBuffer(surfaceData.wireframe.buffer);
+
+    surfaceData = createHeightField(
+        gl, activeFn, 100, domainSize
+    );
+}
 
 /** @type Mesh | null */
 let tangentMesh = null;
@@ -272,7 +282,7 @@ uiSelect({
     onChange(value) {
         fn = value;
         activeFn = functions[value].fn;
-        const nextSurface = createHeightField(gl, activeFn);
+        const nextSurface = createHeightField(gl, activeFn, 100, domainSize);
 
         // @todo cache
         gl.deleteBuffer(surfaceData.surface.buffer);
@@ -283,7 +293,7 @@ uiSelect({
     },
 });
 
-uiSlider({
+const pointX = uiSlider({
     label: "x",
     min: -2,
     max: 2,
@@ -295,7 +305,7 @@ uiSlider({
     },
 });
 
-uiSlider({
+const pointZ = uiSlider({
     label: "z",
     min: -2,
     max: 2,
@@ -304,6 +314,27 @@ uiSlider({
     onChange(value) {
         point.z = value;
         updateTangentMeshes(activeFn);
+    },
+});
+
+uiSlider({
+    label: "Domain size",
+    min: 2,
+    max: 12,
+    step: 1,
+    value: 4,
+    onChange(value) {
+        domainSize = value;
+        rebuildSurface();
+
+        const limit = domainSize / 2;
+        pointX.input.min = String(-limit);
+        pointX.input.max = String(limit);
+        pointZ.input.min = String(-limit);
+        pointZ.input.max = String(limit);
+
+        pointX.value = Math.max(-limit, Math.min(limit, pointX.value));
+        pointZ.value = Math.max(-limit, Math.min(limit, pointZ.value));
     },
 });
 
