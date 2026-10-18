@@ -71,6 +71,26 @@ const functions = {
         description:
             "A smooth central peak that approaches zero outward.",
     },
+    paraboloid: {
+        fn: (x, z) => x * x + z * z,
+        description:
+            "A bowl-shaped surface that rises in every direction from the origin.",
+    },
+
+    cone: {
+        fn: (x, z) => Math.sqrt(x * x + z * z),
+        description:
+            "A cone rising outward from the origin, with a sharp tip.",
+    },
+
+    ripple: {
+        fn: (x, z) => {
+            const r = Math.sqrt(x * x + z * z);
+            return Math.sin(3 * r) * Math.exp(-0.4 * r);
+        },
+        description:
+            "Circular waves that gradually fade away from the origin.",
+    },
 };
 
 /**
@@ -278,6 +298,10 @@ uiSelect({
         { label: "Wave: sin(2x) cos(2z)", value: "wave" },
         { label: "Saddle: 0.5(x^2 - z^2)", value: "saddle" },
         { label: "Gaussian: 2exp(-(x^2+z^2))", value: "gaussian" },
+        { label: "Paraboloid: x^2 + z^2", value: "paraboloid" },
+        { label: "Cone: sqrt(x^2 + z^2)", value: "cone" },
+        { label: "Ripple: sin(3r)exp(-0.4r), r=sqrt(x^2+z^2)", value: "ripple" },
+
     ],
     onChange(value) {
         fn = value;
