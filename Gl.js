@@ -472,6 +472,55 @@ export const createGridAndAxes = (gl) => {
     return createMesh(gl, vertices, gl.LINES);
 };
 
+
+/**
+ * @todo refactor this and the above function.
+ * @param {WebGL2RenderingContext} gl
+ * @param {number} [size]
+ * @param {number} [divisions]
+ * @returns {Mesh}
+ */
+export function createGroundGrid(gl, size = 4, divisions = 10) {
+    /** @type {number[]} */
+    const vertices = [];
+    const half = size / 2;
+    const step = size / divisions;
+
+    const gridColor = [0.35, 0.38, 0.42];
+    const axisXColor = [0.95, 0.25, 0.25];
+    const axisZColor = [0.25, 0.45, 1.0];
+
+    /**
+     * @param {number[]} a
+     * @param {number[]} b
+     * @param {number[]} color
+     */
+    function addLine(a, b, color) {
+        vertices.push(...a, ...color, ...b, ...color);
+    }
+
+    for (let i = 0; i <= divisions; i++) {
+        const p = -half + i * step;
+
+        // Lines parallel to the X axis
+        addLine(
+            [-half, 0, p],
+            [half, 0, p],
+            Math.abs(p) < 1e-6 ? axisXColor : gridColor
+        );
+
+        // Lines parallel to the Z axis
+        addLine(
+            [p, 0, -half],
+            [p, 0, half],
+            Math.abs(p) < 1e-6 ? axisZColor : gridColor
+        );
+    }
+
+    return createMesh(gl, vertices, gl.LINES);
+}
+
+
 /**
  * @param {HTMLCanvasElement} canvas
  * @param {WebGL2RenderingContext} gl

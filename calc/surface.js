@@ -2,7 +2,7 @@
 
 import { tangentPlane } from "../Calculus.js";
 import { getElement, initCanvasGl } from "../common.js";
-import { createHeightField, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createGroundGrid, createHeightField, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
 import { vs, fs, litVs, litFs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
@@ -132,6 +132,7 @@ let fn = "wave";
 let activeFn = functions[fn].fn;
 let domainSize = 4;
 let surfaceData = createHeightField(gl, activeFn, 100, domainSize);
+let groundGrid = createGroundGrid(gl, domainSize, 10);
 
 function rebuildSurface() {
     gl.deleteBuffer(surfaceData.surface.buffer);
@@ -140,6 +141,9 @@ function rebuildSurface() {
     surfaceData = createHeightField(
         gl, activeFn, 100, domainSize
     );
+
+    gl.deleteBuffer(groundGrid.buffer);
+    groundGrid = createGroundGrid(gl, domainSize, 10);
 }
 
 /** @type Mesh | null */
@@ -399,6 +403,8 @@ const render = () => {
     ];
 
     orbitView(azimuth, elevation, distance, view, target);
+
+    drawMesh(groundGrid, model, view, proj, program, surfaceUniforms);
 
     if (display !== "wireframe") {
         if (display === "both") {
