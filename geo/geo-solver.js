@@ -118,7 +118,7 @@ canvas.addEventListener("pointermove", (e) => {
         const dist = Math.hypot(a.x - b.x, a.y - b.y);
 
         if (lastPinchDist !== null && dist > 0) {
-            const factor = lastPinchDist / dist;
+            const factor = -lastPinchDist / dist;
             zoomAtPointer(e, canvas, camera, factor);
         }
         lastPinchDist = dist;
