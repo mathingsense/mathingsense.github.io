@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry solver | MathingSense</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+        }
+
+        body {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        canvas {
+            width: min(90vmin, 100%);
+            height: auto;
+            aspect-ratio: 1 / 1;
+            display: block;
+            margin: 0 auto;
+            touch-action: none;
+            outline: 1px solid red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="../index.html">back</a>
+
+    <h1>Geometry Solver</h1>
+
+    <canvas id="canvas"></canvas>
+    <br>
+
+    <script src="geo-solver.js" type="module"></script>
+
+</body>
+
+</html>
