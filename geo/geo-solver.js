@@ -1,4 +1,4 @@
-import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
+import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas, zoomAtPointer } from "../lib/canvas.js";
 import { Renderer } from "../lib/Renderer.js";
 import { Pt } from "../lib/Pt.js";
 import { Seg } from "../lib/Seg.js";
@@ -53,9 +53,6 @@ let interaction = { type: "idle" };
 
 let activeTool = "move";
 /** @type number | null */
-let activePointerId = null;
-let lastX = 0;
-let lastY = 0;
 
 const HIT_RADIUS_SQ = 10 * 10;
 
@@ -74,13 +71,16 @@ const findPointAt = (x, y) => {
     return null;
 };
 
+const pointers = new Map();   // pointerId -> {x, y}
+
+/** @type number | null */
+let lastPinchDist = null;
+
 canvas.addEventListener("pointerdown", (e) => {
     const { x, y } = pointerToWorld(e, canvas, camera);
     const point = findPointAt(x, y);
 
     if (activeTool === "move") {
-        lastX = e.clientX;
-        lastY = e.clientY;
         if (point) {
             interaction = {
                 type: "drag-point",
@@ -92,29 +92,47 @@ canvas.addEventListener("pointerdown", (e) => {
     }
 
     canvas.setPointerCapture(e.pointerId);
-    activePointerId = e.pointerId;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    lastPinchDist = null;
 });
 
 canvas.addEventListener("pointermove", (e) => {
-    if (e.pointerId !== activePointerId) return;
+    const prev = pointers.get(e.pointerId);
+    if (!prev) return;
 
-    if (interaction.type === "drag-point") {
-        interaction.point.x += (e.clientX - lastX) / camera.zoom;
-        interaction.point.y += (e.clientY - lastY) / camera.zoom;
-    } else if (interaction.type === "pan") {
-        const dx = e.clientX - lastX;
-        const dy = e.clientY - lastY;
-        panCamera(camera, dx, dy);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size === 1) {
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
+
+        if (interaction.type === "drag-point") {
+            interaction.point.x += dx / camera.zoom;
+            interaction.point.y += dy / camera.zoom;
+        } else if (interaction.type === "pan") {
+            panCamera(camera, dx, dy);
+        }
+    } else if (pointers.size === 2) {
+        // two pointers: pinch to zoom
+        const [a, b] = [...pointers.values()];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+
+        if (lastPinchDist !== null && dist > 0) {
+            const factor = lastPinchDist / dist;
+            zoomAtPointer(e, canvas, camera, factor);
+        }
+        lastPinchDist = dist;
     }
-
-    lastX = e.clientX;
-    lastY = e.clientY;
 
     draw();
 });
 
-const stopDragging = () => {
-    activePointerId = null;
+/**
+ * @param {PointerEvent} e
+ */
+const stopDragging = (e) => {
+    pointers.delete(e.pointerId);
+    lastPinchDist = null;
     interaction = { type: "idle" };
 };
 
