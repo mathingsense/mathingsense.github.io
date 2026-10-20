@@ -2,23 +2,41 @@ import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, i
 import { Renderer } from "../lib/Renderer.js";
 import { Point } from "../lib/Point.js";
 import { Scene } from "../lib/Scene.js";
+import { PropLength, Premise, PropMidpoint } from "../lib/Premise.js";
+import { getElement } from "../common.js";
+import { Solver } from "../lib/Solver.js";
+import { TMidp } from "../lib/theorem.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
 
 const { canvas, ctx } = initCanvas("canvas");
+const divPremises = getElement("premises", HTMLDivElement);
+const divConclusion = getElement("conclusion", HTMLDivElement);
 
 const scene = new Scene();
 const render = new Renderer(ctx, world.w, world.h);
 
-const a = scene.addPoint(100, 100);
-const b = scene.addPoint(400, 300);
-const s = scene.addSegment(a, b);
-scene.addMidpoint(s);
+const A = scene.addPoint(100, 100);
+const B = scene.addPoint(400, 300);
+const s = scene.addSegment(A, B);
+const midp = scene.addMidpoint(s);
 
 const points = scene.points;
 const segments = scene.segments;
 const midpoints = scene.midpoints;
+
+const premise = new Premise();
+const lenAB = new PropLength(A, B, 100);
+const midAB = new PropMidpoint(A, B, midp);
+
+premise.add(lenAB);
+premise.add(midAB);
+
+const solver = new Solver(premise);
+const lenAC = new PropLength(A, midp);
+solver.ask(lenAC);
+solver.step(TMidp, lenAC, lenAB, midAB);
 
 const draw = () => {
     clearCanvas(canvas, ctx);
@@ -41,6 +59,9 @@ const draw = () => {
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 1 / camera.zoom;
     ctx.strokeRect(0, 0, world.w, world.h);
+
+    divPremises.textContent = premise.toString();
+    divConclusion.textContent = solver.toString();
 };
 draw();
 

@@ -30,6 +30,10 @@
             touch-action: none;
             outline: 1px solid red;
         }
+
+        .info {
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 
@@ -41,6 +45,16 @@
 
     <canvas id="canvas"></canvas>
     <br>
+
+    <div>
+        <h3>Premises</h3>
+        <div id="premises" class="info">
+        </div>
+
+        <h3>Conclusion</h3>
+        <div id="conclusion" class="info">
+        </div>
+    </div>
 
     <script src="geo-solver.js" type="module"></script>
 
