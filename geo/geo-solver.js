@@ -17,10 +17,10 @@ const divConclusion = getElement("conclusion", HTMLDivElement);
 const scene = new Scene();
 const render = new Renderer(ctx, world.w, world.h);
 
-const A = scene.addPoint(100, 100);
-const B = scene.addPoint(400, 300);
+const A = scene.addPoint(100, 100, "A");
+const B = scene.addPoint(400, 300, "B");
 const s = scene.addSegment(A, B);
-const midp = scene.addMidpoint(s);
+const midp = scene.addMidpoint(s, "M");
 
 const points = scene.points;
 const segments = scene.segments;
