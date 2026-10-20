@@ -1,4 +1,4 @@
-import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas, zoomAtPointer } from "../lib/canvas.js";
+import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas, zoomAtPoint } from "../lib/canvas.js";
 import { Renderer } from "../lib/Renderer.js";
 import { Pt } from "../lib/Pt.js";
 import { Seg } from "../lib/Seg.js";
@@ -96,6 +96,13 @@ canvas.addEventListener("pointerdown", (e) => {
     lastPinchDist = null;
 });
 
+const getMidpoint = (a, b) => {
+    return {
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+    };
+};
+
 canvas.addEventListener("pointermove", (e) => {
     const prev = pointers.get(e.pointerId);
     if (!prev) return;
@@ -118,8 +125,14 @@ canvas.addEventListener("pointermove", (e) => {
         const dist = Math.hypot(a.x - b.x, a.y - b.y);
 
         if (lastPinchDist !== null && dist > 0) {
-            const factor = -lastPinchDist / dist;
-            zoomAtPointer(e, canvas, camera, factor);
+            const factor = dist / lastPinchDist;
+            const midpoint = getMidpoint(a, b);
+            const rect = canvas.getBoundingClientRect();
+
+            const x = midpoint.x - rect.left;
+            const y = midpoint.y - rect.top;
+
+            zoomAtPoint(camera, x, y, factor);
         }
         lastPinchDist = dist;
     }
