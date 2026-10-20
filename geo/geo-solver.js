@@ -1,31 +1,33 @@
 import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas, zoomAtPoint } from "../lib/canvas.js";
 import { Renderer } from "../lib/Renderer.js";
-import { Pt } from "../lib/Pt.js";
-import { Seg } from "../lib/Seg.js";
+import { Point } from "../lib/Point.js";
+import { Scene } from "../lib/Scene.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
 
 const { canvas, ctx } = initCanvas("canvas");
+
+const scene = new Scene();
 const render = new Renderer(ctx, world.w, world.h);
 
-const a = new Pt(100, 100);
-const b = new Pt(400, 300);
-const s = new Seg(a, b);
-const points = [a, b];
-const segs = [s];
+const a = scene.addPoint(100, 100);
+const b = scene.addPoint(400, 300);
+scene.addSegment(a, b);
+const points = scene.points;
+const segments = scene.segments;
 
 const draw = () => {
     clearCanvas(canvas, ctx);
     drawCheckerboard(canvas, ctx, 40);
     applyCameraTransform(canvas, ctx, camera);
 
-    for (const s of segs) {
-        render.seg(s);
+    for (const s of segments) {
+        render.segment(s);
     }
 
     for (const p of points) {
-        render.pt(p, 10);
+        render.point(p, 10);
     }
 
     // Draw the world border.
@@ -44,7 +46,7 @@ attachWheelZoom(canvas, camera, draw);
 
 /**
  * @typedef {{ type: "idle" }
- *   | { type: "drag-point", point: Pt }
+ *   | { type: "drag-point", point: Point }
  *   | { type: "pan" }} Interaction
  */
 
@@ -59,7 +61,7 @@ const HIT_RADIUS_SQ = 10 * 10;
 /**
  * @param {number} x
  * @param {number} y
- * @returns {Pt | null}
+ * @returns {Point | null}
  */
 const findPointAt = (x, y) => {
     for (let i = points.length - 1; i >= 0; i--) {
