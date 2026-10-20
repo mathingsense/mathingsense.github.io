@@ -13,9 +13,12 @@ const render = new Renderer(ctx, world.w, world.h);
 
 const a = scene.addPoint(100, 100);
 const b = scene.addPoint(400, 300);
-scene.addSegment(a, b);
+const s = scene.addSegment(a, b);
+scene.addMidpoint(s);
+
 const points = scene.points;
 const segments = scene.segments;
+const midpoints = scene.midpoints;
 
 const draw = () => {
     clearCanvas(canvas, ctx);
@@ -28,6 +31,10 @@ const draw = () => {
 
     for (const p of points) {
         render.point(p, 10);
+    }
+
+    for (const p of midpoints) {
+        render.midpoint(p, 10);
     }
 
     // Draw the world border.
@@ -116,8 +123,10 @@ canvas.addEventListener("pointermove", (e) => {
         const dy = e.clientY - prev.y;
 
         if (interaction.type === "drag-point") {
-            interaction.point.x += dx / camera.zoom;
-            interaction.point.y += dy / camera.zoom;
+            const p = interaction.point;
+            p.x += dx / camera.zoom;
+            p.y += dy / camera.zoom;
+            scene.propagateChange(p);
         } else if (interaction.type === "pan") {
             panCamera(camera, dx, dy);
         }
