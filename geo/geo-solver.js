@@ -19,8 +19,11 @@ const render = new Renderer(ctx, world.w, world.h);
 
 const A = scene.addPoint(100, 100, "A");
 const B = scene.addPoint(400, 300, "B");
-const s = scene.addSegment(A, B);
-const midp = scene.addMidpoint(s, "M");
+const S1 = scene.addSegment(A, B);
+const M = scene.addMidpoint(S1, "M");
+
+const S2 = scene.addSegment(A, M);
+const N = scene.addMidpoint(S2, "N");
 
 const points = scene.points;
 const segments = scene.segments;
@@ -28,15 +31,20 @@ const midpoints = scene.midpoints;
 
 const premise = new Premise();
 const lenAB = new PropLength(A, B, 100);
-const midAB = new PropMidpoint(A, B, midp);
+const MmidAB = new PropMidpoint(A, B, M);
+const NmidAM = new PropMidpoint(A, M, N);
 
-premise.add(lenAB);
-premise.add(midAB);
+premise.addMany(lenAB, MmidAB, NmidAM);
 
 const solver = new Solver(premise);
-const lenAC = new PropLength(A, midp);
-solver.ask(lenAC);
-solver.step(TMidp, lenAC, lenAB, midAB);
+
+const lenAM = new PropLength(A, M);
+solver.ask(lenAM);
+solver.step(TMidp, lenAM, lenAB, MmidAB);
+
+const lenAN = new PropLength(A, N);
+solver.ask(lenAN);
+solver.step(TMidp, lenAN, lenAM, NmidAM);
 
 const draw = () => {
     clearCanvas(canvas, ctx);
