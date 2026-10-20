@@ -1,6 +1,7 @@
 import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, initCanvas, panCamera, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
 import { Renderer } from "../lib/Renderer.js";
 import { Pt } from "../lib/Pt.js";
+import { Seg } from "../lib/Seg.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
@@ -10,12 +11,18 @@ const render = new Renderer(ctx, world.w, world.h);
 
 const a = new Pt(100, 100);
 const b = new Pt(400, 300);
+const s = new Seg(a, b);
 const points = [a, b];
+const segs = [s];
 
 const draw = () => {
     clearCanvas(canvas, ctx);
     drawCheckerboard(canvas, ctx, 40);
     applyCameraTransform(canvas, ctx, camera);
+
+    for (const s of segs) {
+        render.seg(s);
+    }
 
     for (const p of points) {
         render.pt(p, 10);
