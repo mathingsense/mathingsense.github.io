@@ -6,6 +6,7 @@ import { PropLength, Premise, PropMidpoint } from "../lib/Premise.js";
 import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
 import { TMidp } from "../lib/theorem.js";
+import { Q } from "../lib/cas/Q.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
@@ -30,7 +31,7 @@ const segments = scene.segments;
 const midpoints = scene.midpoints;
 
 const premise = new Premise();
-const lenAB = new PropLength(A, B, 100);
+const lenAB = new PropLength(A, B, new Q(10n));
 const MmidAB = new PropMidpoint(A, B, M);
 const NmidAM = new PropMidpoint(A, M, N);
 
@@ -90,7 +91,6 @@ attachWheelZoom(canvas, camera, draw);
 let interaction = { type: "idle" };
 
 let activeTool = "move";
-/** @type number | null */
 
 const HIT_RADIUS_SQ = 10 * 10;
 
