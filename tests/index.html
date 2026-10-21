@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module tests</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+        }
+
+        body {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        .test-group {
+            border-top: 1px solid #000;
+        }
+
+        .test-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .test-list li {
+            overflow-wrap: anywhere;
+        }
+
+        .fail {
+            background: #fdeaea;
+            color: #8a2020;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../index.html">back</a>
+
+    <h1>Module Tests</h1>
+
+    <button id="rerun">Run tests again</button>
+    <p id="summary">Loading tests...</p>
+    <div id="results"></div>
+
+    <script type="module">
+        import { runTests } from "./test-runner.js";
+
+        await import("./Q.test.js");
+
+        document.querySelector("#rerun").addEventListener("click", runTests);
+
+        await runTests();
+    </script>
+</body>
+
+</html>
