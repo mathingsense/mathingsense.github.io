@@ -8,6 +8,7 @@ import { Solver } from "../lib/Solver.js";
 import { halfLenMidpoint } from "../lib/theorem.js";
 import { Q } from "../lib/cas/Q.js";
 import { Constant } from "../lib/cas/Expr.js";
+import { SymbolManager } from "../lib/cas/Symbol.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
@@ -31,10 +32,14 @@ const points = scene.points;
 const segments = scene.segments;
 const midpoints = scene.midpoints;
 
+const symbols = new SymbolManager();
+const x = symbols.expr("x");
+
 const premise = new Premise();
 const pA = new PropPoint(A);
 const pB = new PropPoint(B);
-const lenAB = new PropLength(A, B, new Constant(new Q(10n)));
+const lenAB = new PropLength(A, B, x);
+
 const MmidAB = new PropMidpoint(S1, M);
 const NmidAM = new PropMidpoint(S2, N);
 
