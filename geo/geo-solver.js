@@ -2,10 +2,10 @@ import { applyCameraTransform, attachWheelZoom, clearCanvas, drawCheckerboard, i
 import { Renderer } from "../lib/Renderer.js";
 import { Point } from "../lib/Point.js";
 import { Scene } from "../lib/Scene.js";
-import { PropLength, Premise, PropMidpoint } from "../lib/Premise.js";
+import { PropLength, Premise, PropMidpoint, PropPoint } from "../lib/Premise.js";
 import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
-import { half1LenMidpoint } from "../lib/theorem.js";
+import { halfLenMidpoint } from "../lib/theorem.js";
 import { Q } from "../lib/cas/Q.js";
 import { Constant } from "../lib/cas/Expr.js";
 
@@ -32,18 +32,24 @@ const segments = scene.segments;
 const midpoints = scene.midpoints;
 
 const premise = new Premise();
+const pA = new PropPoint(A);
+const pB = new PropPoint(B);
 const lenAB = new PropLength(A, B, new Constant(new Q(10n)));
-const MmidAB = new PropMidpoint(A, B, M);
-const NmidAM = new PropMidpoint(A, M, N);
+const MmidAB = new PropMidpoint(S1, M);
+const NmidAM = new PropMidpoint(S2, N);
 
-premise.addMany(lenAB, MmidAB, NmidAM);
+premise.addMany(pA, pB, lenAB, MmidAB, NmidAM);
 
 const solver = new Solver(premise);
 
-const lenAM = half1LenMidpoint(MmidAB, lenAB);
-const lenAN = half1LenMidpoint(NmidAM, lenAM);
+
+const lenAM = halfLenMidpoint(pA, MmidAB, lenAB);
+const lenAN = halfLenMidpoint(pA, NmidAM, lenAM);
 solver.add(lenAM);
 solver.add(lenAN);
+
+const lenMB = halfLenMidpoint(pB, MmidAB, lenAB);
+solver.add(lenMB);
 
 const draw = () => {
     clearCanvas(canvas, ctx);
