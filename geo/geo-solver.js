@@ -5,7 +5,7 @@ import { Scene } from "../lib/Scene.js";
 import { PropLength, Premise, PropMidpoint } from "../lib/Premise.js";
 import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
-import { TMidp } from "../lib/theorem.js";
+import { half1LenMidpoint } from "../lib/theorem.js";
 import { Q } from "../lib/cas/Q.js";
 import { Constant } from "../lib/cas/Expr.js";
 
@@ -40,13 +40,10 @@ premise.addMany(lenAB, MmidAB, NmidAM);
 
 const solver = new Solver(premise);
 
-const lenAM = new PropLength(A, M);
-solver.ask(lenAM);
-solver.step(TMidp, lenAM, lenAB, MmidAB);
-
-const lenAN = new PropLength(A, N);
-solver.ask(lenAN);
-solver.step(TMidp, lenAN, lenAM, NmidAM);
+const lenAM = half1LenMidpoint(MmidAB, lenAB);
+const lenAN = half1LenMidpoint(NmidAM, lenAM);
+solver.add(lenAM);
+solver.add(lenAN);
 
 const draw = () => {
     clearCanvas(canvas, ctx);
