@@ -1,8 +1,8 @@
 import { gcd, Q } from "../lib/cas/Q.js";
-import { initTestFile } from "./test-runner.js";
+import { initTestFile, section, test } from "./test-runner.js";
 import { equal, throws, assert } from "./test-utils.js";
 
-const { test } = initTestFile("Q.test.js");
+initTestFile("Q.test.js");
 
 test("constructor reduces fractions", () => {
     equal(new Q(2n, 4n).toString(), "1/2");
@@ -76,18 +76,6 @@ test("comparisons", () => {
     equal(new Q(-1n, 2n).compare(new Q(1n, 3n)), -1);
 });
 
-test("float conversion", () => {
-    equal(new Q(1n, 2n).toFloat(), 0.5);
-    equal(new Q(3n, 2n).toFloat(), 1.5);
-    equal(new Q(-1n, 4n).toFloat(), -0.25);
-});
-
-test("string conversion", () => {
-    equal(new Q(3n, 1n).toString(), "3");
-    equal(new Q(-3n, 1n).toString(), "-3");
-    equal(new Q(3n, 5n).toString(), "3/5");
-});
-
 test("large BigInt values remain exact", () => {
     const n = 10n ** 100n;
 
@@ -110,11 +98,6 @@ test("arithmetic results remain normalized", () => {
     }
 });
 
-test("ZERO and ONE constants", () => {
-    equal(Q.ZERO.equals(new Q(0n)), true);
-    equal(Q.ONE.equals(new Q(1n)), true);
-});
-
 test("isZero(), isOne()", () => {
     assert(new Q(0n).isZero());
     assert(new Q(2n, 2n).isOne());
@@ -124,4 +107,25 @@ test("Q instance is frozen", () => {
     const a = new Q(10n);
     throws(() => { a.n = 2n; }, TypeError);
     throws(() => { a.d = 3n; }, TypeError);
+});
+
+section("Conversion", () => {
+    test("float conversion", () => {
+        equal(new Q(1n, 2n).toFloat(), 0.5);
+        equal(new Q(3n, 2n).toFloat(), 1.5);
+        equal(new Q(-1n, 4n).toFloat(), -0.25);
+    });
+
+    test("string conversion", () => {
+        equal(new Q(3n, 1n).toString(), "3");
+        equal(new Q(-3n, 1n).toString(), "-3");
+        equal(new Q(3n, 5n).toString(), "3/5");
+    });
+});
+
+section("Constant", () => {
+    test("ZERO and ONE constants", () => {
+        equal(Q.ZERO.equals(new Q(0n)), true);
+        equal(Q.ONE.equals(new Q(1n)), true);
+    });
 });
