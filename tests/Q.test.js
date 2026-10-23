@@ -57,6 +57,12 @@ test("division by zero throws", () => {
     throws(() => new Q(1n).div(new Q(0n)), /division by zero/i);
 });
 
+test("negations", () => {
+    equal(new Q(1n, 2n).neg().toString(), "-1/2");
+    equal(new Q(-1n, 2n).neg().toString(), "1/2");
+    equal(new Q(0n).neg().toString(), "0");
+});
+
 test("equals()", () => {
     equal(new Q(1n, 2n).equals(new Q(2n, 4n)), true);
     equal(new Q(1n, 2n).equals(new Q(3n, 4n)), false);
@@ -109,8 +115,13 @@ test("ZERO and ONE constants", () => {
     equal(Q.ONE.equals(new Q(1n)), true);
 });
 
+test("isZero(), isOne()", () => {
+    assert(new Q(0n).isZero());
+    assert(new Q(2n, 2n).isOne());
+});
+
 test("Q instance is frozen", () => {
     const a = new Q(10n);
-    throws(() => {a.n = 2n;}, TypeError);
-    throws(() => {a.d = 3n;}, TypeError);
+    throws(() => { a.n = 2n; }, TypeError);
+    throws(() => { a.d = 3n; }, TypeError);
 });
