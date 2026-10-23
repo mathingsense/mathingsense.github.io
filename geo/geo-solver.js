@@ -6,8 +6,6 @@ import { PropLength, Premise, PropMidpoint, PropPoint } from "../lib/Premise.js"
 import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
 import { halfLenMidpoint } from "../lib/theorem.js";
-import { Q } from "../lib/cas/Q.js";
-import { Constant } from "../lib/cas/Expr.js";
 import { SymbolManager } from "../lib/cas/Symbol.js";
 
 const world = { w: 600, h: 600 };
@@ -143,6 +141,13 @@ canvas.addEventListener("pointerdown", (e) => {
     lastPinchDist = null;
 });
 
+/** @typedef {{x: number, y: number}} XY */
+
+/**
+ * @param {XY} a
+ * @param {XY} b
+ * @returns {XY}
+ */
 const getMidpoint = (a, b) => {
     return {
         x: (a.x + b.x) / 2,
