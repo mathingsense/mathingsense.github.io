@@ -13,7 +13,7 @@ export function equal(actual, expected) {
 
 /**
  * Assert that a condition is true.
- * @param {unknown} condition
+ * @param {boolean} condition
  * @param {string} [message]
  */
 export function assert(condition, message = "assertion failed") {
