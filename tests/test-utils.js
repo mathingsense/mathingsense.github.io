@@ -3,7 +3,7 @@
  * @param {unknown} actual
  * @param {unknown} expected
  */
-export function assertEqual(actual, expected) {
+export function equal(actual, expected) {
     if (!Object.is(actual, expected)) {
         throw new Error(
             `expected ${String(expected)}, received ${String(actual)}`
@@ -26,7 +26,7 @@ export function assert(condition, message = "assertion failed") {
  * @param {() => unknown} fn
  * @param {RegExp} [expectedMessage]
  */
-export function assertThrows(fn, expectedMessage) {
+export function throws(fn, expectedMessage) {
     let thrown = false;
 
     try {
@@ -57,7 +57,7 @@ export function assertThrows(fn, expectedMessage) {
  * @param {number} expected
  * @param {number} [tolerance]
  */
-export function assertApprox(
+export function approx(
     actual,
     expected,
     tolerance = 1e-10
