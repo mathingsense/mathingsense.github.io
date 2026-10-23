@@ -7,6 +7,7 @@ import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
 import { halfLenMidpoint } from "../lib/theorem.js";
 import { SymbolManager } from "../lib/cas/Symbol.js";
+import { uiSelect } from "../UI.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
@@ -134,6 +135,15 @@ canvas.addEventListener("pointerdown", (e) => {
         } else {
             interaction = { type: "pan" };
         }
+    } else if (activeTool === "point") {
+        // Only create on empty canvas; don't accidentally stack points.
+        if (!point) {
+            scene.addPoint(x, y);
+        } else {
+            console.log("There's already a point here.");
+        }
+        draw();
+        return;
     }
 
     canvas.setPointerCapture(e.pointerId);
@@ -206,3 +216,15 @@ const stopDragging = (e) => {
 canvas.addEventListener("pointerup", stopDragging);
 canvas.addEventListener("pointercancel", stopDragging);
 canvas.addEventListener("lostpointercapture", stopDragging);
+
+uiSelect({
+    label: "Mode",
+    value: activeTool,
+    options: [
+        { label: "Move", value: "move" },
+        { label: "Point", value: "point" },
+    ],
+    onChange(value) {
+        activeTool = value;
+    },
+});
