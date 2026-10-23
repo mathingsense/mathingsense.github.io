@@ -24,7 +24,7 @@
 
         .test-group {
             border: 1px solid #000;
-            margin: 10px 0;
+            margin-bottom: 20px;
             padding: 5px;
         }
 
@@ -78,6 +78,7 @@
         import { runTests } from "./test-runner.js";
 
         await import("./Q.test.js");
+        await import("./Expr.test.js");
 
         document.querySelector("#rerun").addEventListener("click", runTests);
 
