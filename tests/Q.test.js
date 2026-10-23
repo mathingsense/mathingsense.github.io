@@ -1,8 +1,8 @@
 import { Q } from "../lib/cas/Q.js";
-import { createTestGroup } from "./test-runner.js";
+import { initTestFile } from "./test-runner.js";
 import { equal, throws, approx } from "./test-utils.js";
 
-const { test } = createTestGroup("Q.test.js");
+const { test } = initTestFile("Q.test.js");
 
 test("constructs an integer", () => {
     const q = new Q(5n);

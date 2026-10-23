@@ -7,24 +7,23 @@ import { getElement } from "../common.js";
  */
 
 /** @type {Map<string, TestCase[]>} */
-const groups = new Map();
+const files = new Map();
 
 /**
- * Usually named after its test file.
- * @param {string} name
+ * @param {string} fileName
  */
-export function createTestGroup(name) {
-    if (groups.has(name)) {
-        throw new Error(`test group already exists: ${name}`);
+export function initTestFile(fileName) {
+    if (files.has(fileName)) {
+        throw new Error(`test file already exists: ${fileName}`);
     }
 
     /** @type {TestCase[]} */
     const tests = [];
-    groups.set(name, tests);
+    files.set(fileName, tests);
 
     return {
         /**
-         * Register a test in this group.
+         * Register a test in this file.
          * @param {string} testName
          * @param {() => void | Promise<void>} fn
          */
@@ -35,7 +34,8 @@ export function createTestGroup(name) {
 }
 
 /**
- * Run all registered tests and render one section per group.
+ * Run all registered tests and render one section per file.
+ * Display the link to each test file on Github.
  */
 export async function runTests() {
     const results = getElement("results", HTMLDivElement);
@@ -50,12 +50,16 @@ export async function runTests() {
     let totalFailed = 0;
     let totalTests = 0;
 
-    for (const [groupName, tests] of groups) {
+    for (const [fileName, tests] of files) {
         const section = document.createElement("section");
         section.className = "test-group";
 
         const heading = document.createElement("p");
-        heading.textContent = groupName;
+
+        const link = document.createElement("a");
+        link.href = "https://github.com/mathingsense/mathingsense.github.io/blob/main/tests/" + fileName;
+        link.textContent = fileName;
+        heading.appendChild(link);
 
         const groupSummary = document.createElement("p");
         groupSummary.textContent = "Running...";
