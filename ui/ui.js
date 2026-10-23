@@ -94,3 +94,22 @@ list.list({
         },
     ],
 });
+
+const select = new UI().top(300);
+
+let n = "sphere";
+
+select.select({
+    label: "Geometry",
+    value: n,
+    options: [
+        { label: "Sphere", value: "sphere" },
+        { label: "Cube", value: "cube" },
+        { label: "Torus", value: "torus" },
+        { label: "Plane", value: "plane" },
+    ],
+    onChange(value) {
+        n = value;
+        console.log(n);
+    },
+});
