@@ -24,30 +24,31 @@ export function assert(condition, message = "assertion failed") {
 
 /**
  * @param {() => unknown} fn
- * @param {RegExp} [expectedMessage]
+ * @param {RegExp | (new (...args: any[]) => Error)} expected
  */
-export function throws(fn, expectedMessage) {
+export function throws(fn, expected) {
     let thrown = false;
+    let error;
 
     try {
         fn();
-    } catch (error) {
+    } catch (e) {
         thrown = true;
-
-        if (
-            expectedMessage &&
-            !expectedMessage.test(
-                error instanceof Error ? error.message : String(error)
-            )
-        ) {
-            throw new Error(
-                `Error did not match ${expectedMessage}`
-            );
-        }
+        error = e;
     }
 
     if (!thrown) {
         throw new Error("expected function to throw an error");
+    }
+
+    if (expected instanceof RegExp) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!expected.test(message)) {
+            throw new Error(`error message "${message}" did not match ${expected}`);
+        }
+    } else if (!(error instanceof expected)) {
+        const actual = error?.constructor?.name ?? typeof error;
+        throw new Error(`expected ${expected.name} but got ${actual}`);
     }
 }
 

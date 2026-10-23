@@ -111,6 +111,6 @@ test("ZERO and ONE constants", () => {
 
 test("Q instance is frozen", () => {
     const a = new Q(10n);
-    throws(() => {a.n = 2n;});
-    throws(() => {a.d = 3n;});
+    throws(() => {a.n = 2n;}, TypeError);
+    throws(() => {a.d = 3n;}, TypeError);
 });
