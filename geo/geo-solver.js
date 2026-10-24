@@ -7,7 +7,7 @@ import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
 import { halfLenMidpoint } from "../lib/theorem.js";
 import { SymbolManager } from "../lib/cas/Symbol.js";
-import { uiSelect } from "../UI.js";
+import { UI } from "../lib/UI.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
@@ -16,7 +16,14 @@ const { canvas, ctx } = initCanvas("canvas");
 const divPremises = getElement("premises", HTMLDivElement);
 const divConclusion = getElement("conclusion", HTMLDivElement);
 
-const scene = new Scene();
+const uiObj = new UI()
+    .title("Objects").background("white");
+
+const objectList = uiObj.list({
+    items: [],
+});
+
+const scene = new Scene(objectList);
 const render = new Renderer(ctx, world.w, world.h);
 
 const A = scene.addPoint(100, 100, "A");
@@ -217,7 +224,10 @@ canvas.addEventListener("pointerup", stopDragging);
 canvas.addEventListener("pointercancel", stopDragging);
 canvas.addEventListener("lostpointercapture", stopDragging);
 
-uiSelect({
+const uiControl = new UI()
+    .background("white").right(10);
+
+uiControl.select({
     label: "Mode",
     value: activeTool,
     options: [
