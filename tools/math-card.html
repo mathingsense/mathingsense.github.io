@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math card | MathingSense</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+    <script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+    <script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+    <script defer
+        src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+        }
+
+        body {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            resize: vertical;
+            border: 1px solid black;
+            font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        .stage {
+            overflow: auto;
+            padding: 10px;
+            margin: 10px 0;
+            background: gray;
+        }
+
+        #artboard {
+            width: 720px;
+            height: 480px;
+            min-width: 180px;
+            min-height: 120px;
+            border: 1px solid black;
+            overflow: auto;
+            resize: both;
+            background: white
+        }
+
+        #content {
+            width: 100%;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="../index.html">back</a>
+
+    <h1>Math Card</h1>
+
+    <textarea id="source" spellcheck="false"></textarea>
+
+    <button id="export">Export JPG</button>
+
+    <div class="stage">
+        <div id="artboard">
+            <div id="content"></div>
+        </div>
+    </div>
+
+    <script src="math-card.js" type="module"></script>
+
+</body>
+
+</html>
