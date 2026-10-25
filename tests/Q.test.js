@@ -4,6 +4,13 @@ import { equal, throws, assert } from "./test-utils.js";
 
 initTestFile("Q.test.js");
 
+/**
+ * @param {bigint} n
+ * @param {bigint} d
+ * @returns {Q}
+ */
+const q = (n, d = 1n) => new Q(n, d);
+
 test("constructor reduces fractions", () => {
     equal(new Q(2n, 4n).toString(), "1/2");
     equal(new Q(10n, 5n).toString(), "2");
@@ -127,5 +134,94 @@ section("Constant", () => {
     test("ZERO and ONE constants", () => {
         equal(Q.ZERO.equals(new Q(0n)), true);
         equal(Q.ONE.equals(new Q(1n)), true);
+    });
+});
+
+section("reci()", () => {
+    test("reciprocal of a positive rational", () => {
+        equal(new Q(2n, 3n).reci().toString(), "3/2");
+    });
+
+    test("reciprocal of a negative rational", () => {
+        equal(new Q(-2n, 3n).reci().toString(), "-3/2");
+    });
+
+    test("reciprocal of an integer", () => {
+        equal(new Q(2n).reci().toString(), "1/2");
+    });
+
+    test("throws for zero", () => {
+        throws(() => Q.ZERO.reci(), RangeError);
+    });
+
+    test("reciprocal of reciprocal returns the original rational", () => {
+        const q = new Q(3n, 5n);
+        equal(q.reci().reci().toString(), "3/5");
+    });
+});
+
+section("max()", () => {
+    test("two values", () => {
+        equal(Q.max(q(2n), q(5n)).toString(), "5");
+    });
+
+    test("multiple values", () => {
+        equal(Q.max(q(2n), q(5n), q(3n), q(1n)).toString(), "5");
+    });
+
+    test("negative values", () => {
+        equal(Q.max(q(-5n), q(-2n), q(-8n)).toString(), "-2");
+    });
+
+    test("compares rationals exactly", () => {
+        equal(Q.max(new Q(1n, 2n), new Q(2n, 3n)).toString(), "2/3");
+    });
+
+    test("equal values preserve first argument", () => {
+        const a = new Q(1n, 2n);
+        const b = new Q(2n, 4n);
+        assert(Q.max(a, b) === a);
+    });
+
+    test("single value", () => {
+        const a = q(7n);
+        assert(Q.max(a) === a);
+    });
+
+    test("no values throws", () => {
+        throws(() => Q.max(), RangeError);
+    });
+});
+
+section("min()", () => {
+    test("two values", () => {
+        equal(Q.min(q(2n), q(5n)).toString(), "2");
+    });
+
+    test("multiple values", () => {
+        equal(Q.min(q(2n), q(5n), q(3n), q(1n)).toString(), "1");
+    });
+
+    test("negative values", () => {
+        equal(Q.min(q(-5n), q(-2n), q(-8n)).toString(), "-8");
+    });
+
+    test("compares rationals exactly", () => {
+        equal(Q.min(new Q(1n, 2n), new Q(2n, 3n)).toString(), "1/2");
+    });
+
+    test("equal values preserve first argument", () => {
+        const a = new Q(1n, 2n);
+        const b = new Q(2n, 4n);
+        assert(Q.min(a, b) === a);
+    });
+
+    test("single value", () => {
+        const a = q(7n);
+        assert(Q.min(a) === a);
+    });
+
+    test("no values throws", () => {
+        throws(() => Q.min(), RangeError);
     });
 });
