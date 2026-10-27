@@ -3,6 +3,7 @@ import { variable, constant, type, pi, lam, app } from "../../lib/prover/core/ex
 import { extendContext, declareConstant } from "../../lib/prover/core/context.js";
 import { initTestFile, section, test } from "../test-runner.js";
 import { equal, throws, assert } from "../test-utils.js";
+import { parse } from "../../lib/prover/core/parser.js";
 
 initTestFile("type-checker.test.js");
 
@@ -373,5 +374,77 @@ section("checkType()", () => {
             [],
             withZero
         ), Error);
+    });
+});
+
+
+
+section("Universe levels", () => {
+    test("Type(0) has type Type(1)", () => {
+        const inferred = inferType(parse("Type(0)"));
+
+        assert(
+            inferred.kind === "Type" && inferred.level === 1,
+            "Type(0) should have type Type(1)"
+        );
+    });
+
+    test("Type(1) has type Type(2)", () => {
+        const inferred = inferType(parse("Type(1)"));
+
+        assert(
+            inferred.kind === "Type" && inferred.level === 2,
+            "Type(1) should have type Type(2)"
+        );
+    });
+
+    test("a Pi type over Type(0) lives in Type(1)", () => {
+        const inferred = inferType(
+            parse("Pi (A : Type(0)) -> A")
+        );
+
+        assert(
+            inferred.kind === "Type" && inferred.level === 1,
+            "the Pi type should live in Type(1)"
+        );
+    });
+
+    test("a Pi type over Type(1) lives in Type(2)", () => {
+        const inferred = inferType(
+            parse("Pi (A : Type(1)) -> A")
+        );
+
+        assert(
+            inferred.kind === "Type" && inferred.level === 2,
+            "the Pi type should live in Type(2)"
+        );
+    });
+});
+
+
+section("Invalid type constructions", () => {
+    test("rejects a Pi domain that is not a type", () => {
+        // Type(0) is a term whose type is Type(1).
+        // The domain here is Type(0), which is valid.
+        // Instead, use a function value as the proposed domain.
+        const expression =
+            "Pi (f : fun (A : Type(0)) => A) -> Type(0)";
+
+        throws(
+            () => inferType(parse(expression)),
+            Error
+        );
+    });
+
+    test("rejects a Pi codomain that is not a type", () => {
+        // The codomain expression is a function value,
+        // not a type.
+        const expression =
+            "Pi (A : Type(0)) -> fun (x : A) => x";
+
+        throws(
+            () => inferType(parse(expression)),
+            Error
+        );
     });
 });
