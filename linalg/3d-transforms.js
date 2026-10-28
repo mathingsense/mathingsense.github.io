@@ -1,5 +1,5 @@
-import { getElement, initCanvasGl } from "../common.js";
-import { createBasisVectors, createCube, createCubeWireframe, createGridAndAxes, createProgram, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createBasisVectors, createCube, createCubeWireframe, createGridAndAxes, createProgram, initCanvasGl, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { getElement } from "../lib/html.js";
 import { fs, vs } from "../shaders.js";
 import { uiButton, uiSlider } from "../UI.js";
 
@@ -150,7 +150,7 @@ const updateTransform = () => {
     }
 
     matrixDisplay.textContent = rows.join("\n");
-}
+};
 
 const scaleX = uiSlider({
     label: "Scale X",

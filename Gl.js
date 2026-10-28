@@ -58,7 +58,7 @@ export class M4 {
             0, 0, 1, 0,
             0, 0, 0, 1,
         ]);
-    }
+    };
 
     /**
      * @param {number} tx
@@ -429,7 +429,7 @@ export const createBasisVectors = (gl) => {
     );
 
     return createMesh(gl, vertices, gl.LINES);
-}
+};
 
 /**
  * @param {WebGL2RenderingContext} gl
@@ -539,6 +539,39 @@ export function createGroundGrid(gl, size = 4, divisions = 10) {
     return createMesh(gl, vertices, gl.LINES);
 }
 
+/**
+ * @param {string} id
+ * @param {number} width
+ * @param {number} height
+ * @returns {[HTMLCanvasElement, WebGL2RenderingContext]}
+ */
+export const initCanvasGl = (id, width, height) => {
+    if (!(width > 0 && height > 0)) {
+        throw new RangeError('width and height must be positive');
+    }
+
+    const canvas = document.getElementById(id);
+    if (canvas === null) {
+        throw new Error(`element #${id} not found`);
+    }
+    if (!(canvas instanceof HTMLCanvasElement)) {
+        throw new TypeError(`element #${id} is not a canvas`);
+    }
+
+    const gl = canvas.getContext("webgl2");
+    if (gl === null) {
+        throw new Error(`could not get a webgl2 context for #${id}`);
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+    return [canvas, gl];
+};
 
 /**
  * @param {HTMLCanvasElement} canvas
@@ -649,7 +682,7 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
             y: 1 / length,
             z: -dz / length,
         };
-    }
+    };
 
     for (const row of samples) {
         for (const p of row) {
@@ -700,7 +733,7 @@ export const createHeightField = (gl, fn, segments = 100, size = 4) => {
         minHeight,
         maxHeight,
     };
-}
+};
 
 
 /**
@@ -741,7 +774,7 @@ export const createTangentPlaneMesh = (gl, plane, size = 1) => {
     ];
 
     return createMesh(gl, triangles, gl.TRIANGLES);
-}
+};
 
 
 /**

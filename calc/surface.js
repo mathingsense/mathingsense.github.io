@@ -1,8 +1,8 @@
 // TODO: clean up, refactor
 
 import { tangentPlane } from "../Calculus.js";
-import { getElement, initCanvasGl } from "../common.js";
-import { createGroundGrid, createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, createTangentVectors, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { createGroundGrid, createHeightField, createPointMarker, createProgram, createTangentPlaneMesh, createTangentVectors, initCanvasGl, M4, orbitView, perspective, resizeCanvas } from "../Gl.js";
+import { getElement } from "../lib/html.js";
 import { vs, fs, litVs, litFs } from "../shaders.js";
 import { uiButton, uiSelect, uiSlider } from "../UI.js";
 
@@ -47,7 +47,7 @@ const getUniforms = (gl, program) => {
         view: gl.getUniformLocation(program, "uView"),
         projection: gl.getUniformLocation(program, "uProjection"),
     };
-}
+};
 
 const surfaceUniforms = getUniforms(gl, program);
 const litUniforms = getUniforms(gl, litPorgram);

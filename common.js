@@ -6,79 +6,6 @@ import { Vec2 } from "./Vec2.js";
 /** @typedef {{x: number, y: number}} XY */
 
 /**
- * @template {Element} T
- * @param {string} id
- * @param {new () => T} type
- * @returns {T}
- */
-export const getElement = (id, type) => {
-    const el = document.getElementById(id);
-    if (el === null) {
-        throw new Error(`element #${id} not found`);
-    }
-    if (!(el instanceof type)) {
-        throw new TypeError(`element #${id} is not a ${type.name}`);
-    }
-    return el;
-};
-
-/**
- * @param {string} id
- * @param {number} width
- * @param {number} height
- * @returns {[HTMLCanvasElement, CanvasRenderingContext2D]}
- */
-export const initCanvas = (id, width, height) => {
-    if (!(width > 0 && height > 0)) {
-        throw new RangeError('width and height must be positive');
-    }
-
-    const canvas = getElement(id, HTMLCanvasElement);
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) {
-        throw new Error(`could not get a 2D context for #${id}`);
-    }
-
-    // Sizes the canvas for crisp rendering on HiDPI displays.
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-
-    ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
-    return [canvas, ctx];
-};
-
-/**
- * @param {string} id
- * @param {number} width
- * @param {number} height
- * @returns {[HTMLCanvasElement, WebGL2RenderingContext]}
- */
-export const initCanvasGl = (id, width, height) => {
-    if (!(width > 0 && height > 0)) {
-        throw new RangeError('width and height must be positive');
-    }
-
-    const canvas = getElement(id, HTMLCanvasElement);
-    const gl = canvas.getContext("webgl2");
-    if (gl === null) {
-        throw new Error(`could not get a webgl2 context for #${id}`);
-    }
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-    return [canvas, gl];
-};
-
-/**
  * @param {XY} A
  * @param {XY} B
  * @returns {number}
@@ -360,7 +287,7 @@ export const trisect = (V, P, Q) => {
         new Vec2(Math.cos(t1), Math.sin(t1)),
         new Vec2(Math.cos(t2), Math.sin(t2))
     ];
-}
+};
 
 /**
  * @param {Pt} V1
@@ -381,7 +308,7 @@ export const intersect = (V1, d1, V2, d2) => {
         V1.x + t * d1.x,
         V1.y + t * d1.y
     );
-}
+};
 
 /**
  * @param {XY} p
@@ -420,4 +347,4 @@ export const project = (p, A, B, clamp = false) => {
 export const getProjectionPt = (p, A, B) => {
     const r = project(p, A, B);
     return new Pt(r.x, r.y);
-}
+};

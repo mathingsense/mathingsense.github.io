@@ -3,11 +3,11 @@ import { Renderer } from "../lib/Renderer.js";
 import { Point } from "../lib/Point.js";
 import { Scene } from "../lib/Scene.js";
 import { PropLength, Premise, PropMidpoint, PropPoint } from "../lib/Premise.js";
-import { getElement } from "../common.js";
 import { Solver } from "../lib/Solver.js";
 import { halfLenMidpoint } from "../lib/theorem.js";
 import { SymbolManager } from "../lib/cas/Symbol.js";
 import { UI } from "../lib/UI.js";
+import { getElement } from "../lib/html.js";
 
 const world = { w: 600, h: 600 };
 const camera = { x: 0, y: 0, zoom: 1 };
