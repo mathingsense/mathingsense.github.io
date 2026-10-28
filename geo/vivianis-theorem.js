@@ -1,17 +1,18 @@
-import { getProjectionPt, initCanvas, getPointerPos, isInCircle, Pt, Triangle } from "../common.js";
+import { getProjectionPt, isInCircle, Pt, Triangle } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
 import { Renderer, STROKE, FILL } from "../Renderer.js";
 
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const width = 600;
-const height = 600;
-
-const [canvas, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const colors = ["#f00", "#0f0", "#00f"];
 
-const s = 400
-const t = Math.sin(Math.PI / 3) * s
-const cy = height / 2
+const s = 400;
+const t = Math.sin(Math.PI / 3) * s;
+const cy = world.h / 2;
 
 // Vertices of equilateral triangle
 const A = new Pt(250, cy - t / 2);
@@ -28,7 +29,7 @@ let p3 = getProjectionPt(p, C, A);
 const r = 10;
 let dragging = false;
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
 /**
  * @param {CanvasRenderingContext2D} c
@@ -41,7 +42,7 @@ const render = new Renderer(c, width, height);
 const line = (c, x1, y1, x2, y2, color) => {
     c.strokeStyle = color;
     render.seg4(x1, y1, x2, y2);
-}
+};
 
 /**
  * @param {CanvasRenderingContext2D} c
@@ -52,16 +53,13 @@ const line = (c, x1, y1, x2, y2, color) => {
 const line2 = (c, A, B, color) => {
     c.strokeStyle = color;
     render.seg2(A, B);
-}
+};
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const draw = (c) => {
+const draw = () => {
+    c.strokeStyle = "#000";
     c.lineWidth = 1;
-    c.fillStyle = "#ffffff";
-    c.strokeStyle = "#000000";
-    c.fillRect(0, 0, width, height);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
     render.triangle3(A, B, C, STROKE);
 
@@ -84,22 +82,28 @@ const draw = (c) => {
     // Draw draggable vertices
     c.fillStyle = "#000";
     render.pt(p, r, FILL);
-}
-draw(c);
+};
+draw();
+
+window.addEventListener('resize', () => {
+    resizeCanvas(canvas);
+    fitWorld(canvas, camera, world);
+    draw();
+});
 
 /**
  * @param {PointerEvent} e
  */
 const pointerDown = (e) => {
-    const [x, y] = getPointerPos(canvas, e);
+    const { x, y } = pointerToWorld(e, canvas, camera);
     if (isInCircle(x, y, p.x, p.y, r)) {
         dragging = true;
     }
-}
+};
 
 const pointerUp = () => {
     dragging = false;
-}
+};
 
 /**
  * @param {PointerEvent} e
@@ -107,7 +111,7 @@ const pointerUp = () => {
 const pointerMove = (e) => {
     e.preventDefault();
     if (dragging) {
-        const [x, y] = getPointerPos(canvas, e);
+        const { x, y } = pointerToWorld(e, canvas, camera);
         if (!tri.contains(new Pt(x, y))) return;
 
         p.x = x;
@@ -116,9 +120,9 @@ const pointerMove = (e) => {
         p1 = getProjectionPt(p, A, B);
         p2 = getProjectionPt(p, B, C);
         p3 = getProjectionPt(p, C, A);
-        draw(c);
+        draw();
     }
-}
+};
 
 canvas.style.touchAction = "none";
 canvas.addEventListener("pointerdown", pointerDown, false);
