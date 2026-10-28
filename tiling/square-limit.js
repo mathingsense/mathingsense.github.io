@@ -1,9 +1,12 @@
-import { initCanvas, getElement } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas } from "../lib/canvas.js";
+import { getElement } from "../lib/html.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [_, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
+
 const selectStep = getElement("step", HTMLSelectElement);
 selectStep.value = "squarelimit";
 
@@ -163,10 +166,10 @@ class Pic {
      * @returns {Pic}
      */
     static cycle(p) {
-        const rot = Pic.ccw(p)
-        const rot2 = Pic.ccw(rot)
-        const rot3 = Pic.ccw(rot2)
-        return Pic.quartet(p, rot3, rot, rot2)
+        const rot = Pic.ccw(p);
+        const rot2 = Pic.ccw(rot);
+        const rot3 = Pic.ccw(rot2);
+        return Pic.quartet(p, rot3, rot, rot2);
     }
 
     /**
@@ -274,17 +277,14 @@ const steps = {
 
 let step = steps[selectStep.value];
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const draw = (c) => {
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
+const draw = () => {
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
     step();
-}
-draw(c);
+};
+draw();
 
 selectStep.addEventListener("change", () => {
     step = steps[selectStep.value];
-    draw(c);
+    draw();
 });
