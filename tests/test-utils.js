@@ -6,7 +6,8 @@
 export function equal(actual, expected) {
     if (!Object.is(actual, expected)) {
         throw new Error(
-            `expected ${String(expected)}, received ${String(actual)}`
+            `expected ${String(expected)} (${typeof expected}), ` +
+            `received ${String(actual)} (${typeof actual})`
         );
     }
 }

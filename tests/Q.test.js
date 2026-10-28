@@ -116,6 +116,92 @@ test("Q instance is frozen", () => {
     throws(() => { a.d = 3n; }, TypeError);
 });
 
+
+section("fromString()", (test) => {
+    test("trim input", () => {
+        const n = Q.fromString("  123   ");
+        equal(n.n, 123n);
+        equal(n.d, 1n);
+    });
+
+    test("positive integer", () => {
+        const n = Q.fromString("123");
+        equal(n.n, 123n);
+        equal(n.d, 1n);
+    });
+
+    test("negative integer", () => {
+        const n = Q.fromString("-69");
+        equal(n.n, -69n);
+        equal(n.d, 1n);
+    });
+
+    test("zero", () => {
+        const n = Q.fromString("0");
+        equal(n.n, 0n);
+        equal(n.d, 1n);
+    });
+
+    test("positive decimal", () => {
+        const n = Q.fromString("1.25");
+        equal(n.n, 5n);
+        equal(n.d, 4n);
+    });
+
+    test("negative decimal", () => {
+        const n = Q.fromString("-0.25");
+        equal(n.n, -1n);
+        equal(n.d, 4n);
+    });
+
+    test("fraction", () => {
+        const n = Q.fromString("3/5");
+        equal(n.n, 3n);
+        equal(n.d, 5n);
+    });
+
+    test("accepts whitespace around slash", () => {
+        const n = Q.fromString("3 /   5");
+        equal(n.n, 3n);
+        equal(n.d, 5n);
+    });
+
+    test("normalizes negative denominator", () => {
+        const n = Q.fromString("3/-5");
+        equal(n.n, -3n);
+        equal(n.d, 5n);
+    });
+
+    test("accepts decimal fraction", () => {
+        const n = Q.fromString("1.5/2");
+        equal(n.n, 3n);
+        equal(n.d, 4n);
+    });
+
+    test("throws for division by zero", () => {
+        throws(() => Q.fromString("2/0"), RangeError);
+    });
+
+    test("throws for decimal without leading digit", () => {
+        throws(() => Q.fromString(".5"), SyntaxError);
+    });
+
+    test("throws for decimal without a fractional digit", () => {
+        throws(() => Q.fromString("5."), SyntaxError);
+    });
+
+    test("throws for scientific notation", () => {
+        throws(() => Q.fromString("1e-2"), SyntaxError);
+        throws(() => Q.fromString("1e2"), SyntaxError);
+        throws(() => Q.fromString("1E-2"), SyntaxError);
+    });
+
+    test("throws for multiple slashes", () => {
+        throws(() => Q.fromString("2/3/4"), SyntaxError);
+    });
+});
+
+
 section("Conversion", (test) => {
     test("float conversion", () => {
         equal(new Q(1n, 2n).toFloat(), 0.5);
