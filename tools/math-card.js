@@ -1,4 +1,4 @@
-import { getElement } from "../common.js";
+import { getElement } from "../lib/html.js";
 
 const source = getElement("source", HTMLTextAreaElement);
 const content = getElement("content", HTMLDivElement);
