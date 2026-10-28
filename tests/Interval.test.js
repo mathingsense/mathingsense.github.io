@@ -1,9 +1,9 @@
 import { Q } from "../lib/cas/Q.js";
 import { Interval } from "../lib/cas/Interval.js";
-import { initTestFile, section, test } from "./test-runner.js";
+import { initTestFile } from "./test-runner.js";
 import { equal, throws, assert } from "./test-utils.js";
 
-initTestFile("Interval.test.js");
+const { test, section } = initTestFile("Interval.test.js");
 
 /**
  * @param {bigint} n
@@ -110,7 +110,41 @@ test("includes()", () => {
     assert(!a.includes(interval(6n, 1n, 7n, 1n)));
 });
 
-section("arithmetic", () => {
+
+section("fromString()", (test) => {
+    test("integer bounds", () => {
+        const a = Interval.fromString("[1,2]");
+        assert(a.lower.equals(q(1n)));
+        assert(a.upper.equals(q(2n)));
+    });
+
+    test("fraction bounds", () => {
+        const a = Interval.fromString("[1/2, 3/4]");
+        assert(a.lower.equals(q(1n, 2n)));
+        assert(a.upper.equals(q(3n, 4n)));
+    });
+
+    test("singleton fraction", () => {
+        const a = Interval.fromString("6/7");
+        assert(a.lower.equals(q(6n, 7n)));
+        assert(a.upper.equals(q(6n, 7n)));
+    });
+
+    test("singleton decimal", () => {
+        const a = Interval.fromString("6.9");
+        assert(a.lower.equals(q(69n, 10n)));
+        assert(a.upper.equals(q(69n, 10n)));
+    });
+
+    test("mixed bounds", () => {
+        const a = Interval.fromString("[-1/2, 4.5]");
+        assert(a.lower.equals(q(-1n, 2n)));
+        assert(a.upper.equals(q(9n, 2n)));
+    });
+});
+
+
+section("arithmetic", (test) => {
     test("additions", () => {
         const a = interval(1n, 2n, 5n, 2n);
         const b = interval(-1n, 2n, 4n, 1n);
@@ -250,7 +284,7 @@ test("large BigInt endpoints remain exact", () => {
     );
 });
 
-section("Algebraic properties", () => {
+section("Algebraic properties", (test) => {
     test("addition is commutative", () => {
         const a = interval(-2n, 1n, 3n, 1n);
         const b = interval(1n, 2n, 5n, 2n);
@@ -286,7 +320,7 @@ section("Algebraic properties", () => {
     });
 });
 
-section("Constants", () => {
+section("Constants", (test) => {
     test("ZERO and ONE constants", () => {
         assert(Interval.ZERO.isPoint());
         equal(Interval.ZERO.lower.toString(), "0");
@@ -314,7 +348,7 @@ section("Constants", () => {
     });
 });
 
-section("lt()", () => {
+section("lt()", (test) => {
     test("returns true when this interval is strictly below the other", () => {
         assert(interval(1n, 1n, 2n, 1n).lt(interval(3n, 1n, 4n, 1n)));
     });
@@ -345,7 +379,7 @@ section("lt()", () => {
     });
 });
 
-section("reci()", () => {
+section("reci()", (test) => {
     test("reciprocal of a positive interval", () => {
         const result = interval(2n, 1n, 4n, 1n).reci();
         equal(result.lower.toString(), "1/4");
@@ -383,7 +417,7 @@ section("reci()", () => {
     });
 });
 
-section("length()", () => {
+section("length()", (test) => {
     test("length of a positive interval", () => {
         equal(interval(2n, 1n, 5n, 1n).length().toString(), "3");
     });
@@ -405,7 +439,7 @@ section("length()", () => {
     });
 });
 
-section("abs()", () => {
+section("abs()", (test) => {
     test("returns the same interval when entirely positive", () => {
         const i = interval(2n, 1n, 5n, 1n);
         assert(Interval.abs(i) === i);
@@ -448,7 +482,7 @@ section("abs()", () => {
     });
 });
 
-section("max()", () => {
+section("max()", (test) => {
     test("two intervals", () => {
         const r = Interval.max(interval(1n, 1n, 4n, 1n), interval(3n, 1n, 6n, 1n));
         equal(r.lower.toString(), "3");
@@ -482,7 +516,7 @@ section("max()", () => {
     });
 });
 
-section("min()", () => {
+section("min()", (test) => {
     test("two intervals", () => {
         const r = Interval.min(interval(1n, 1n, 4n, 1n), interval(3n, 1n, 6n, 1n));
         equal(r.lower.toString(), "1");
@@ -516,7 +550,7 @@ section("min()", () => {
     });
 });
 
-section("isIntersect()", () => {
+section("isIntersect()", (test) => {
     test("disjoint intervals", () => {
         assert(!Interval.isIntersect(interval(1n, 1n, 2n, 1n), interval(3n, 1n, 4n, 1n)));
     });
@@ -577,7 +611,7 @@ section("isIntersect()", () => {
     });
 });
 
-section("intersect()", () => {
+section("intersect()", (test) => {
     test("identical intervals", () => {
         const r = Interval.intersect(interval(1n, 1n, 3n, 1n), interval(1n, 1n, 3n, 1n));
         equal(r.lower.toString(), "1");
