@@ -1,4 +1,4 @@
-import { getElement } from "../common.js";
+import { getElement } from "../lib/html.js";
 
 /** @typedef {() => void | Promise<void>} Callback */
 
