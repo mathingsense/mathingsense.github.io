@@ -1,10 +1,12 @@
-import { initCanvas, isInCircle, getPointerPos, Pt, Triangle } from "../common.js";
+import { isInCircle, Pt, Triangle } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
 import { Renderer, STROKE, FILL, BOTH } from "../Renderer.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [canvas, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const colors = ["#ffff0099", "#00ffff99", "#ff00ff99"];
 
@@ -20,14 +22,11 @@ const deg = -Math.PI / 3;
 /** @type {{x: number, y: number} | null} */
 let currentDrag = null;
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const draw = (c) => {
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
+const draw = () => {
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
     // render.triangle3(A, B, C, STROKE);
 
@@ -53,15 +52,20 @@ const draw = (c) => {
     for (const v of vs) {
         render.pt(v, r, FILL);
     }
-}
-draw(c);
+};
+draw();
 
+window.addEventListener('resize', () => {
+    resizeCanvas(canvas);
+    fitWorld(canvas, camera, world);
+    draw();
+});
 
 /**
  * @param {PointerEvent} e
  */
 const pointerDown = (e) => {
-    const [x, y] = getPointerPos(canvas, e);
+    const { x, y } = pointerToWorld(e, canvas, camera);
     // Reverse order so the topmost-drawn vertex wins
     for (let i = vs.length - 1; i >= 0; i--) {
         const v = vs[i];
@@ -70,7 +74,7 @@ const pointerDown = (e) => {
             break;
         }
     }
-}
+};
 
 function pointerUp() {
     currentDrag = null;
@@ -82,12 +86,12 @@ function pointerUp() {
 const pointerMove = (e) => {
     e.preventDefault();
     if (currentDrag !== null) {
-        const [x, y] = getPointerPos(canvas, e);
+        const { x, y } = pointerToWorld(e, canvas, camera);
         currentDrag.x = x;
         currentDrag.y = y;
-        draw(c);
+        draw();
     }
-}
+};
 
 canvas.style.touchAction = "none";
 canvas.addEventListener("pointerdown", pointerDown, false);
