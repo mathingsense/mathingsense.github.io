@@ -1,17 +1,19 @@
-import { getElement, initCanvas } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas } from "../lib/canvas.js";
+import { getElement } from "../lib/html.js";
 import { Renderer, STROKE } from "../Renderer.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [_, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const nInput = getElement("n", HTMLInputElement);
 const kInput = getElement("k", HTMLInputElement);
 const button = getElement("update", HTMLButtonElement);
 const error = getElement("error", HTMLDivElement);
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
 let n = 200;
 let k = 6;
@@ -27,10 +29,9 @@ const cx = 300;
 const cy = 300;
 
 const draw = () => {
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
-    c.save()
     c.translate(cx, cy);
     render.circle2(0, 0, r, STROKE);
 
@@ -42,15 +43,14 @@ const draw = () => {
         let y2 = r * Math.sin(t * i * k);
         render.seg4(x1, y1, x2, y2);
     }
-    c.restore();
-}
+};
 draw();
 
 const update = () => {
     n = Number(nInput.value);
     k = Number(kInput.value);
     draw();
-}
+};
 
 // TODO: generalize and separate check for each input
 const validate = () => {
@@ -67,7 +67,7 @@ const validate = () => {
     error.textContent = msg;
     button.disabled = msg !== "";
     return msg === "";
-}
+};
 
 nInput.addEventListener("input", validate);
 kInput.addEventListener("input", validate);
