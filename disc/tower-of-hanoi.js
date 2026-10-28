@@ -1,29 +1,28 @@
-import { initCanvas, getPointerPos } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
 import { Renderer, FILL, BOTH } from "../Renderer.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [canvas, c] = initCanvas("canvas", width, height)
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
 
 const pegs = [[5, 4, 3, 2, 1], [], []];
 const disk_height = 20;
 
-let select = 0
-let msg = ""
+let select = 0;
+let msg = "";
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const draw = (c) => {
+const draw = () => {
     c.lineWidth = 1;
     c.fillStyle = "#ffffff";
     c.strokeStyle = "#000000";
-    c.fillRect(0, 0, width, height);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
     // Highlight selected peg
     if (select > 0) {
@@ -36,7 +35,7 @@ const draw = (c) => {
     render.seg4(200, 0, 200, 600);
     render.seg4(400, 0, 400, 600);
 
-    c.setLineDash([])
+    c.setLineDash([]);
 
     // Draw pegs
     c.lineWidth = 4;
@@ -62,14 +61,20 @@ const draw = (c) => {
         c.font = "20px Arial";
         c.fillText(msg, 10, 30);
     }
-}
-draw(c);
+};
+draw();
+
+window.addEventListener('resize', () => {
+    resizeCanvas(canvas);
+    fitWorld(canvas, camera, world);
+    draw();
+});
 
 /**
  * @param {MouseEvent} e
  */
 const handleClick = (e) => {
-    const [x, _] = getPointerPos(canvas, e);
+    const { x } = pointerToWorld(e, canvas, camera);
 
     let region = 0;
     if (x < 200) {
@@ -85,7 +90,7 @@ const handleClick = (e) => {
         if (pegs[region - 1].length > 0) {
             select = region;
             msg = "";
-            draw(c);
+            draw();
         }
     } else {
         if (select !== region) {
@@ -104,9 +109,9 @@ const handleClick = (e) => {
         }
 
         select = 0;
-        draw(c);
+        draw();
     }
-}
+};
 
 canvas.style.touchAction = "none";
 canvas.addEventListener("click", handleClick, false);
