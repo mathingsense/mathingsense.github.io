@@ -33,13 +33,15 @@ const files = new Map();
 
 /**
  * @param {TestCase[]} target
+ * @param {() => void} [guard]
  */
-function makeTest(target) {
+function makeTest(target, guard) {
     /**
      * @param {string} name
      * @param {Callback} fn
      */
     const test = (name, fn) => {
+        guard?.();
         target.push({ name, fn, only: false });
     };
     /**
@@ -47,6 +49,7 @@ function makeTest(target) {
      * @param {Callback} fn
      */
     test.only = (name, fn) => {
+        guard?.();
         hasOnly = true;
         target.push({ name, fn, only: true });
     };
@@ -65,16 +68,38 @@ export function initTestFile(name) {
     const file = { tests: [], sections: [] };
     files.set(name, file);
 
+    /** @type {string | null} name of the section whose callback is running */
+    let activeSection = null;
+
+    /**
+     * @param {string} what
+     */
+    const assertNotInSection = (what) => {
+        if (activeSection !== null) {
+            throw new Error(
+                `${what} called while defining section "${activeSection}". ` +
+                `Use the \`test\` parameter passed to the section callback.`
+            );
+        }
+    };
+
     /**
      * @param {string} name
      * @param {(test: ReturnType<typeof makeTest>) => void} callback
      * @param {boolean} only
      */
     function addSection(name, callback, only) {
+        assertNotInSection("section()"); // also catches nested sections
         if (only) hasOnly = true;
         const section = { name, tests: [], only };
         file.sections.push(section);
-        callback(makeTest(section.tests));
+
+        activeSection = name;
+        try {
+            callback(makeTest(section.tests));        // section's own test: no guard
+        } finally {
+            activeSection = null;
+        }
     }
 
     /**
@@ -82,6 +107,7 @@ export function initTestFile(name) {
      * @param {(test: (name: string, fn: Callback) => void) => void} callback
      */
     const section = (name, callback) => addSection(name, callback, false);
+
     /**
      * @param {string} name
      * @param {(test: (name: string, fn: Callback) => void) => void} callback
@@ -89,7 +115,7 @@ export function initTestFile(name) {
     section.only = (name, callback) => addSection(name, callback, true);
 
     return {
-        test: makeTest(file.tests),
+        test: makeTest(file.tests, () => assertNotInSection("test()")),
         section
     };
 }
