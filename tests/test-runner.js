@@ -89,6 +89,123 @@ export function initTestFile(name) {
     files.set(name, file);
 }
 
+/** @param {unknown} error */
+function errorMessage(error) {
+    return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * @param {TestCase} item
+ * @returns {Promise<{ name: string, error: string | null }>}
+ */
+async function runCase({ name, fn }) {
+    try {
+        await fn();
+        return { name, error: null };
+    } catch (error) {
+        return { name, error: errorMessage(error) };
+    }
+}
+
+/** @param {{ name: string, error: string | null }} result */
+function renderResult({ name, error }) {
+    const row = document.createElement("li");
+    if (error === null) {
+        row.textContent = `✓ ${name}`;
+    } else {
+        row.className = "fail";
+        row.textContent = `✗ ${name}: ${error}`;
+    }
+    return row;
+}
+
+/** @typedef {{ passed: number, failed: number }} Stats */
+
+/** @param {Stats} stats */
+function formatStats({ passed, failed }) {
+    return `${passed} passed, ${failed} failed, ${passed + failed} total`;
+}
+
+/**
+ * @param {TestCase[]} tests
+ * @param {HTMLElement} parent
+ * @param {Stats} stats
+ * @param {() => void} onProgress
+ */
+async function runList(tests, parent, stats, onProgress) {
+    const list = document.createElement("ul");
+    list.className = "test-list";
+    parent.append(list);
+
+    for (const item of tests) {
+        const result = await runCase(item);
+        if (result.error === null) stats.passed++;
+        else stats.failed++;
+
+        list.append(renderResult(result));
+        onProgress();
+    }
+}
+
+const GITHUB_TESTS_URL =
+    "https://github.com/mathingsense/mathingsense.github.io/blob/main/tests/";
+
+
+/**
+ * @param {string} fileName
+ * @returns {{section: HTMLElement, summary: HTMLParagraphElement}}
+ */
+function renderFileHeader(fileName) {
+    const section = document.createElement("section");
+    section.className = "test-group";
+
+    const title = document.createElement("p");
+    title.className = "test-group-title";
+
+    const link = document.createElement("a");
+    link.href = GITHUB_TESTS_URL + fileName;
+    link.textContent = fileName;
+    title.appendChild(link);
+
+    const summary = document.createElement("p");
+    summary.textContent = "Running...";
+
+    section.append(title, summary);
+    return { section, summary };
+}
+
+/**
+ * @param {string} fileName
+ * @param {TestFile} file
+ * @param {HTMLElement} results
+ * @returns {Promise<Stats>}
+ */
+async function runFile(fileName, file, results) {
+    const stats = { passed: 0, failed: 0 };
+    const { section, summary } = renderFileHeader(fileName);
+    results.append(section);
+
+    const onProgress = () => {
+        summary.textContent = formatStats(stats);
+    };
+
+    await runList(file.tests, section, stats, onProgress);
+
+    for (const { name, tests } of file.sections) {
+        const el = document.createElement("section");
+        el.className = "test-section";
+
+        const head = document.createElement("p");
+        head.textContent = name;
+        el.append(head);
+        section.append(el);
+
+        await runList(tests, el, stats, onProgress);
+    }
+
+    return stats;
+}
+
 /**
  * Run all registered tests and sections per file.
  * Display the link to each test file on Github.
@@ -102,90 +219,17 @@ export async function runTests() {
     summary.textContent = "Running tests...";
     rerun.disabled = true;
 
-    let totalPassed = 0;
-    let totalFailed = 0;
-    let totalTests = 0;
+    /** @type {Stats} */
+    const total = { passed: 0, failed: 0 };
 
-    for (const [fileName, file] of files) {
-        const fileSection = document.createElement("section");
-        fileSection.className = "test-group";
-
-        const heading = document.createElement("p");
-        heading.className = "test-group-title";
-
-        const link = document.createElement("a");
-        link.href = "https://github.com/mathingsense/mathingsense.github.io/blob/main/tests/" + fileName;
-        link.textContent = fileName;
-        heading.appendChild(link);
-
-        const fileSummary = document.createElement("p");
-        fileSummary.textContent = "Running...";
-
-        fileSection.append(heading, fileSummary);
-        results.append(fileSection);
-
-        let passed = 0;
-        let failed = 0;
-        let count = 0;
-
-        /**
-         * @param {TestCase[]} tests
-         * @param {HTMLElement} parent
-         */
-        async function runList(tests, parent) {
-            const list = document.createElement("ul");
-            list.className = "test-list";
-            parent.append(list);
-
-            for (const item of tests) {
-                const row = document.createElement("li");
-
-                try {
-                    await item.fn();
-                    passed++;
-                    totalPassed++;
-                    row.textContent = `✓ ${item.name}`;
-                } catch (error) {
-                    failed++;
-                    totalFailed++;
-                    row.className = "fail";
-                    row.textContent =
-                        `✗ ${item.name}: ${error instanceof Error
-                            ? error.message
-                            : String(error)
-                        }`;
-                }
-
-                count++;
-                totalTests++;
-                list.append(row);
-
-                fileSummary.textContent =
-                    `${passed} passed, ${failed} failed, ${count} total`;
-            }
+    try {
+        for (const [fileName, file] of files) {
+            const stats = await runFile(fileName, file, results);
+            total.passed += stats.passed;
+            total.failed += stats.failed;
         }
-
-        // Tests registered directly on the group.
-        await runList(file.tests, fileSection);
-
-        // Tests registered inside named sections.
-        for (const { name, tests } of file.sections) {
-            const el = document.createElement("section");
-            el.className = "test-section";
-
-            const head = document.createElement("p");
-            head.textContent = name;
-
-            el.append(head);
-            fileSection.append(el);
-
-            await runList(tests, el);
-        }
+        summary.textContent = `Overall: ${formatStats(total)}`;
+    } finally {
+        rerun.disabled = false;
     }
-
-    summary.textContent =
-        `Overall: ${totalPassed} passed, ${totalFailed} failed, ` +
-        `${totalTests} total`;
-
-    rerun.disabled = false;
 }
