@@ -1,16 +1,19 @@
-import { getElement, initCanvas } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas } from "../lib/canvas.js";
+import { getElement } from "../lib/html.js";
 import { Renderer } from "../Renderer.js";
 
-const width = 500;
-const height = 700;
+const world = { x: 0, y: 0, w: 500, h: 700 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [_, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
+
 const selectZ = getElement("z", HTMLSelectElement);
 selectZ.value = "6";
 
 const divResult = getElement("result", HTMLDivElement);
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
 const cx = 20;
 const cy = 450;
@@ -32,7 +35,7 @@ const axisY = () => {
     c.fillStyle = "#00f";
     c.fillText("Y", 0, 20);
     c.fillText("0", cx - 15, cy + 15);
-}
+};
 
 const axisX = () => {
     const x = cy * cos30;
@@ -49,7 +52,7 @@ const axisX = () => {
     }
     c.fillStyle = "#00f";
     c.fillText("X", cx + x, cy + y + 20);
-}
+};
 
 const axisZ = () => {
     const x = cy * cos30;
@@ -66,7 +69,7 @@ const axisZ = () => {
     }
     c.fillStyle = "#00f";
     c.fillText("Z", cx + x, cy + y + 20);
-}
+};
 
 /**
  * @param {number} x
@@ -76,7 +79,7 @@ const lineXY = (x, y) => {
     const i = y * u * cos30;
     const j = y * u * sin30;
     render.line4(cx, cy - x * u, cx + i, cy + j);
-}
+};
 
 /**
  * Finds all positive divisors of a positive integer sorted in ascending order.
@@ -106,13 +109,13 @@ const findXY = (z) => {
         res.push([z + d, z + z * z / d]);
     }
     return res;
-}
+};
 
 let z = 6;
 
 const draw = () => {
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
     axisY();
     axisX();
@@ -129,7 +132,7 @@ const draw = () => {
     divResult.textContent = res
         .map(r => "(" + r.map(i => String(i)).join(", ") + ", " + z + ")")
         .join(" ");
-}
+};
 draw();
 
 selectZ.addEventListener("change", () => {
