@@ -1,11 +1,11 @@
 import { Q } from "../lib/cas/Q.js";
 import { div, Expr, mul, print, Product, simplify, SymbolExpr } from "../lib/cas/Expr.js";
-import { initTestFile, section, test } from "./test-runner.js";
+import { initTestFile } from "./test-runner.js";
 import { equal, throws } from "./test-utils.js";
 import { Constant } from "../lib/cas/Expr.js";
 import { SymbolManager } from "../lib/cas/Symbol.js";
 
-initTestFile("Expr.test.js");
+const { test, section } = initTestFile("Expr.test.js");
 
 /**
  * @param {bigint} n
@@ -21,7 +21,7 @@ test("base equals() is abstract", () => {
     throws(() => new Expr().equals(x), /equals\(\) must be implemented/);
 });
 
-section("Constant", () => {
+section("Constant", (test) => {
     test("equal rational values compare equal", () => {
         equal(c(1n, 2n).equals(c(2n, 4n)), true);
     });
@@ -40,7 +40,7 @@ section("Constant", () => {
     });
 });
 
-section("SymbolExpr", () => {
+section("SymbolExpr", (test) => {
     test("prints the symbol name", () => {
         equal(print(x), "x");
     });
@@ -65,7 +65,7 @@ section("SymbolExpr", () => {
     });
 });
 
-section("mul()", () => {
+section("mul()", (test) => {
     test("multiplies rational constants", () => {
         equal(print(mul(c(2n), c(3n))), "6");
     });
@@ -102,7 +102,7 @@ section("mul()", () => {
     });
 });
 
-section("div()", () => {
+section("div()", (test) => {
     test("divides rational constants", () => {
         equal(print(div(c(6n), c(3n))), "2");
     });
@@ -127,7 +127,7 @@ section("div()", () => {
     });
 });
 
-section("print()", () => {
+section("print()", (test) => {
     test("prints products with coefficients", () => {
         equal(
             print(new Product(new Q(3n), [
@@ -160,7 +160,7 @@ section("print()", () => {
     });
 });
 
-section("simplify()", () => {
+section("simplify()", (test) => {
     test("leaves constants unchanged", () => {
         const value = c(7n);
         equal(simplify(value), value);
@@ -197,7 +197,7 @@ section("simplify()", () => {
     });
 });
 
-section("Product.equals()", () => {
+section("Product.equals()", (test) => {
     test("equal normalized products compare equal", () => {
         const a = new Product(new Q(2n), [
             { base: x, exponent: 2 },

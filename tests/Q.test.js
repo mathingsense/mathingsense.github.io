@@ -1,8 +1,8 @@
 import { gcd, Q } from "../lib/cas/Q.js";
-import { initTestFile, section, test } from "./test-runner.js";
+import { initTestFile } from "./test-runner.js";
 import { equal, throws, assert } from "./test-utils.js";
 
-initTestFile("Q.test.js");
+const { test, section } = initTestFile("Q.test.js");
 
 /**
  * @param {bigint} n
@@ -116,7 +116,7 @@ test("Q instance is frozen", () => {
     throws(() => { a.d = 3n; }, TypeError);
 });
 
-section("Conversion", () => {
+section("Conversion", (test) => {
     test("float conversion", () => {
         equal(new Q(1n, 2n).toFloat(), 0.5);
         equal(new Q(3n, 2n).toFloat(), 1.5);
@@ -130,14 +130,14 @@ section("Conversion", () => {
     });
 });
 
-section("Constant", () => {
+section("Constant", (test) => {
     test("ZERO and ONE constants", () => {
         equal(Q.ZERO.equals(new Q(0n)), true);
         equal(Q.ONE.equals(new Q(1n)), true);
     });
 });
 
-section("reci()", () => {
+section("reci()", (test) => {
     test("reciprocal of a positive rational", () => {
         equal(new Q(2n, 3n).reci().toString(), "3/2");
     });
@@ -160,7 +160,7 @@ section("reci()", () => {
     });
 });
 
-section("max()", () => {
+section("max()", (test) => {
     test("two values", () => {
         equal(Q.max(q(2n), q(5n)).toString(), "5");
     });
@@ -193,7 +193,7 @@ section("max()", () => {
     });
 });
 
-section("min()", () => {
+section("min()", (test) => {
     test("two values", () => {
         equal(Q.min(q(2n), q(5n)).toString(), "2");
     });

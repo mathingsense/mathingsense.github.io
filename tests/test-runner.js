@@ -26,51 +26,6 @@ import { getElement } from "../common.js";
 /** @type {Map<string, TestFile>} */
 const files = new Map();
 
-/** @type {TestFile | null} */
-let currentFile = null;
-
-/** @type {TestSection | null} */
-let currentSection = null;
-
-/**
- * Register a test in the current file or section.
- * @param {string} name
- * @param {Callback} fn
- */
-export function test(name, fn) {
-    if (!currentFile) {
-        throw new Error("test() must be called after initTestFile()");
-    }
-
-    const tests = currentSection
-        ? currentSection.tests
-        : currentFile.tests;
-
-    tests.push({ name, fn });
-}
-
-/**
- * Register a section and its tests in current file.
- * @param {string} name
- * @param {Callback} callback
- */
-export function section(name, callback) {
-    if (!currentFile) {
-        throw new Error("section() must be called after initTestFile()");
-    }
-
-    const section = {
-        name: name,
-        tests: [],
-    };
-
-    currentFile.sections.push(section);
-    currentSection = section;
-
-    callback();
-    currentSection = null;
-}
-
 /**
  * @param {string} name
  */
@@ -80,30 +35,42 @@ export function initTestFile(name) {
     }
 
     /** @type {TestFile} */
-    const file = {
-        tests: [],
-        sections: [],
+    const file = { tests: [], sections: [] };
+    files.set(name, file);
+
+    /**
+     * @param {TestCase[]} target
+     * @returns {(name: string, fn: Callback) => void}
+     */
+    const makeTest = (target) => (name, fn) => {
+        target.push({ name, fn });
     };
 
-    currentFile = file;
-    files.set(name, file);
-}
-
-/** @param {unknown} error */
-function errorMessage(error) {
-    return error instanceof Error ? error.message : String(error);
+    return {
+        test: makeTest(file.tests),
+        /**
+         * Register a section and its tests in this file.
+         * @param {string} name
+         * @param {(test: (name: string, fn: Callback) => void) => void} callback
+         */
+        section(name, callback) {
+            const section = { name, tests: [] };
+            file.sections.push(section);
+            callback(makeTest(section.tests));
+        },
+    };
 }
 
 /**
  * @param {TestCase} item
  * @returns {Promise<{ name: string, error: string | null }>}
  */
-async function runCase({ name, fn }) {
+export async function runCase({ name, fn }) {
     try {
         await fn();
         return { name, error: null };
     } catch (error) {
-        return { name, error: errorMessage(error) };
+        return { name, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
@@ -122,7 +89,7 @@ function renderResult({ name, error }) {
 /** @typedef {{ passed: number, failed: number }} Stats */
 
 /** @param {Stats} stats */
-function formatStats({ passed, failed }) {
+export function formatStats({ passed, failed }) {
     return `${passed} passed, ${failed} failed, ${passed + failed} total`;
 }
 
@@ -149,7 +116,6 @@ async function runList(tests, parent, stats, onProgress) {
 
 const GITHUB_TESTS_URL =
     "https://github.com/mathingsense/mathingsense.github.io/blob/main/tests/";
-
 
 /**
  * @param {string} fileName
