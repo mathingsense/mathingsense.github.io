@@ -6,6 +6,7 @@ import { getElement } from "../lib/html.js";
  * @typedef {{
  *     name: string,
  *     fn: Callback,
+ *     only: boolean,
  * }} TestCase
  */
 
@@ -13,6 +14,7 @@ import { getElement } from "../lib/html.js";
  * @typedef {{
  *     name: string,
  *     tests: TestCase[],
+ *     only: boolean,
  * }} TestSection
  */
 
@@ -23,8 +25,33 @@ import { getElement } from "../lib/html.js";
  * }} TestFile
  */
 
+/** True once any `.only` has been registered. */
+let hasOnly = false;
+
 /** @type {Map<string, TestFile>} */
 const files = new Map();
+
+/**
+ * @param {TestCase[]} target
+ */
+function makeTest(target) {
+    /**
+     * @param {string} name
+     * @param {Callback} fn
+     */
+    const test = (name, fn) => {
+        target.push({ name, fn, only: false });
+    };
+    /**
+     * @param {string} name
+     * @param {Callback} fn
+     */
+    test.only = (name, fn) => {
+        hasOnly = true;
+        target.push({ name, fn, only: true });
+    };
+    return test;
+}
 
 /**
  * @param {string} name
@@ -39,25 +66,31 @@ export function initTestFile(name) {
     files.set(name, file);
 
     /**
-     * @param {TestCase[]} target
-     * @returns {(name: string, fn: Callback) => void}
+     * @param {string} name
+     * @param {(test: ReturnType<typeof makeTest>) => void} callback
+     * @param {boolean} only
      */
-    const makeTest = (target) => (name, fn) => {
-        target.push({ name, fn });
-    };
+    function addSection(name, callback, only) {
+        if (only) hasOnly = true;
+        const section = { name, tests: [], only };
+        file.sections.push(section);
+        callback(makeTest(section.tests));
+    }
+
+    /**
+     * @param {string} name
+     * @param {(test: (name: string, fn: Callback) => void) => void} callback
+     */
+    const section = (name, callback) => addSection(name, callback, false);
+    /**
+     * @param {string} name
+     * @param {(test: (name: string, fn: Callback) => void) => void} callback
+     */
+    section.only = (name, callback) => addSection(name, callback, true);
 
     return {
         test: makeTest(file.tests),
-        /**
-         * Register a section and its tests in this file.
-         * @param {string} name
-         * @param {(test: (name: string, fn: Callback) => void) => void} callback
-         */
-        section(name, callback) {
-            const section = { name, tests: [] };
-            file.sections.push(section);
-            callback(makeTest(section.tests));
-        },
+        section
     };
 }
 
@@ -91,6 +124,15 @@ function renderResult({ name, error }) {
 /** @param {Stats} stats */
 export function formatStats({ passed, failed }) {
     return `${passed} passed, ${failed} failed, ${passed + failed} total`;
+}
+
+/**
+ * @param {TestCase[]} tests
+ * @param {boolean} [sectionOnly]
+ */
+function pick(tests, sectionOnly = false) {
+    if (!hasOnly || sectionOnly) return tests;
+    return tests.filter((t) => t.only);
 }
 
 /**
@@ -148,6 +190,13 @@ function renderFileHeader(fileName) {
  */
 async function runFile(fileName, file, results) {
     const stats = { passed: 0, failed: 0 };
+
+    const topLevel = pick(file.tests);
+    const sections = file.sections
+        .map((s) => ({ name: s.name, tests: pick(s.tests, s.only) }))
+        .filter((s) => s.tests.length > 0);
+    if (topLevel.length === 0 && sections.length === 0) return stats;
+
     const { section, summary } = renderFileHeader(fileName);
     results.append(section);
 
@@ -155,9 +204,9 @@ async function runFile(fileName, file, results) {
         summary.textContent = formatStats(stats);
     };
 
-    await runList(file.tests, section, stats, onProgress);
+    await runList(topLevel, section, stats, onProgress);
 
-    for (const { name, tests } of file.sections) {
+    for (const { name, tests } of sections) {
         const el = document.createElement("section");
         el.className = "test-section";
 
@@ -194,7 +243,8 @@ export async function runTests() {
             total.passed += stats.passed;
             total.failed += stats.failed;
         }
-        summary.textContent = `Overall: ${formatStats(total)}`;
+        summary.textContent =
+            `Overall: ${formatStats(total)}` + (hasOnly ? " (⚠ .only active)" : "");
     } finally {
         rerun.disabled = false;
     }
