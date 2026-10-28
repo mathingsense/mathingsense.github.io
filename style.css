@@ -15,7 +15,8 @@ body {
 
 canvas {
     display: block;
-    border: 1px solid black;
+    outline: 1px solid black;
+    touch-action: none;
 }
 
 #error {

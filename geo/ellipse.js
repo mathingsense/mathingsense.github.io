@@ -1,14 +1,16 @@
-import { initCanvas, isInCircle, getPointerPos, Pt, Ellipse, distance } from "../common.js";
+import { isInCircle, Pt, Ellipse, distance } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, pointerToWorld, resizeCanvas } from "../lib/canvas.js";
 import { Renderer, FILL, BOTH } from "../Renderer.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [canvas, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const r = 10;
-const cx = width / 2;
-const cy = height / 2;
+const cx = world.w / 2;
+const cy = world.h / 2;
 
 let f1 = new Pt(150, 300);
 let f2 = new Pt(450, 300);
@@ -20,20 +22,17 @@ let dragging = false;
 let dragType = "at";
 let dragFoci = f1;
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
-/**
- * @param {CanvasRenderingContext2D} c
- */
-const draw = (c) => {
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
+const draw = () => {
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
     // Coordinate axes
     c.strokeStyle = "#cbd5e1";
     c.lineWidth = 1;
-    render.seg4(0, cy, width, cy);
-    render.seg4(cx, 0, cx, height);
+    render.seg4(0, cy, world.w, cy);
+    render.seg4(cx, 0, cx, world.h);
 
     // The ellipse
     c.fillStyle = "rgba(14,165,233,0.07)";
@@ -53,15 +52,15 @@ const draw = (c) => {
     const y = 550;
     c.strokeStyle = "red";
     render.seg4(cx - A, y, cx - A + d1, y);
-    c.strokeStyle = "blue"
+    c.strokeStyle = "blue";
     render.seg4(cx - A + d1, y, cx - A + d1 + d2, y);
 
     // Helper visual lines
     c.lineWidth = 1;
     c.strokeStyle = "#000";
     c.setLineDash([10, 10]);
-    render.seg4(cx - A, 0, cx - A, height);
-    render.seg4(cx + A, 0, cx + A, height);
+    render.seg4(cx - A, 0, cx - A, world.h);
+    render.seg4(cx + A, 0, cx + A, world.h);
     c.setLineDash([]);
 
     // Draggable dots.
@@ -76,27 +75,33 @@ const draw = (c) => {
     c.fillText("F₁", f1.x - 8, f1.y + 22);
     c.fillText("F₂", f2.x - 8, f2.y + 22);
     c.fillText("P", p.x + 10, p.y - 10);
-}
-draw(c);
+};
+draw();
+
+window.addEventListener('resize', () => {
+    resizeCanvas(canvas);
+    fitWorld(canvas, camera, world);
+    draw();
+});
 
 /**
  * @param {PointerEvent} e
  */
 const pointerDown = (e) => {
-    const [x, y] = getPointerPos(canvas, e);
+    const { x, y } = pointerToWorld(e, canvas, camera);
     for (const p of foci) {
         if (isInCircle(x, y, p.x, p.y, r)) {
             dragging = true;
-            dragType = "foci"
-            dragFoci = p
+            dragType = "foci";
+            dragFoci = p;
             return;
         }
     }
     if (isInCircle(x, y, p.x, p.y, r)) {
         dragging = true;
-        dragType = "at"
+        dragType = "at";
     }
-}
+};
 
 /**
  * @param {PointerEvent} e
@@ -105,7 +110,7 @@ const pointerMove = (e) => {
     if (!dragging) return;
 
     e.preventDefault();
-    let [x, y] = getPointerPos(canvas, e);
+    let { x, y } = pointerToWorld(e, canvas, camera);
 
     if (dragType === "at") {
         x = (x - cx) / A;
@@ -124,12 +129,12 @@ const pointerMove = (e) => {
         }
         [A, B] = Ellipse.findABfromFoci(f1, f2, p);
     }
-    draw(c);
-}
+    draw();
+};
 
 const pointerUp = () => {
     dragging = false;
-}
+};
 
 canvas.style.touchAction = "none";
 canvas.addEventListener("pointerdown", pointerDown, false);
