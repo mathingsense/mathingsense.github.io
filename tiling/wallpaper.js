@@ -1,11 +1,14 @@
-import { initCanvas, getElement, getPointerPos } from "../common.js";
 import { Lattice, WallpaperGroup } from "../WallpaperGroup.js";
 import { FILL, Renderer, STROKE } from "../Renderer.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, pointerToWorld } from "../lib/canvas.js";
+import { getElement } from "../lib/html.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [canvas, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
+
 const selectGroup = getElement("group", HTMLSelectElement);
 const selectMode = getElement("mode", HTMLSelectElement);
 const showGrid = getElement("showGrid", HTMLInputElement);
@@ -14,7 +17,7 @@ selectGroup.value = "p1";
 selectMode.value = "default";
 showGrid.checked = true;
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
 const mp1 = () => render.triangle6(10, 10, 80, 20, 50, 40, STROKE);
 const lp1 = Lattice.oblique(120, 107, 69);
@@ -111,30 +114,30 @@ let currGroup = selectGroup.value;
 let currMode = selectMode.value;
 let current = defaults[currGroup];
 
-/** @type {{points: [number, number][]}[]} */
+/** @typedef {{x: number, y: number}} XY */
+
+/** @type {{points: XY[]}[]} */
 let strokes = [];
 
-/** @type {{points: [number, number][]} | null} */
+/** @type {{points: XY[]} | null} */
 let currStroke = null;
 
 let isDrawing = false;
 
-/**
- * @param {CanvasRenderingContext2D} c 
- */
-const draw = (c) => {
+const draw = () => {
     c.lineWidth = 1;
     c.fillStyle = "#fff";
     c.strokeStyle = "#000";
-    c.fillRect(0, 0, width, height);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
 
-    c.fillStyle = "#000"
+    c.fillStyle = "#000";
     if (showGrid.checked) {
         render.lattice(current[1]);
     }
     render.group(current[0], current[1], current[2]);
-}
-draw(c);
+};
+draw();
 
 function drawCustom() {
     const visibleStrokes = currStroke
@@ -148,7 +151,7 @@ function drawCustom() {
 
 /**
  * @param {CanvasRenderingContext2D} ctx
- * @param {{points: [number, number][]}} stroke
+ * @param {{points: XY[]}} stroke
  */
 function drawStroke(ctx, stroke) {
     const points = stroke.points;
@@ -157,12 +160,12 @@ function drawStroke(ctx, stroke) {
     ctx.strokeStyle = "#000";
     if (points.length === 1) {
         // A tap should produce a dot.
-        render.circle2(points[0][0], points[0][1], 2, FILL);
+        render.circle2(points[0].x, points[0].y, 2, FILL);
     } else {
         ctx.beginPath();
-        ctx.moveTo(points[0][0], points[0][1]);
+        ctx.moveTo(points[0].x, points[0].y);
         for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i][0], points[i][1]);
+            ctx.lineTo(points[i].x, points[i].y);
         }
         ctx.stroke();
     }
@@ -178,19 +181,19 @@ const pointerDown = (e) => {
 
     isDrawing = true;
     currStroke = {
-        points: [getPointerPos(canvas, e)]
+        points: [pointerToWorld(e, canvas, camera)]
     };
-    draw(c);
-}
+    draw();
+};
 
 /**
  * @param {PointerEvent} e
  */
 const pointerMove = (e) => {
     if (!isDrawing || !currStroke) return;
-    currStroke.points.push(getPointerPos(canvas, e));
-    draw(c);
-}
+    currStroke.points.push(pointerToWorld(e, canvas, camera));
+    draw();
+};
 
 function finishStroke() {
     if (!isDrawing) return;
@@ -200,7 +203,7 @@ function finishStroke() {
         strokes.push(currStroke);
         currStroke = null;
     }
-    draw(c);
+    draw();
 }
 
 canvas.style.touchAction = "none";
@@ -209,7 +212,7 @@ canvas.addEventListener("pointermove", pointerMove, false);
 canvas.addEventListener("pointerup", finishStroke);
 canvas.addEventListener("pointercancel", finishStroke);
 
-showGrid.addEventListener("change", () => draw(c));
+showGrid.addEventListener("change", () => draw());
 
 const updateMode = () => {
     if (currMode === "default") {
@@ -217,19 +220,19 @@ const updateMode = () => {
     } else {
         current = [current[0], current[1], drawCustom];
     }
-}
+};
 
 selectGroup.addEventListener("change", () => {
     const value = selectGroup.value;
     currGroup = value;
     current = defaults[value];
     updateMode();
-    draw(c);
+    draw();
 });
 
 selectMode.addEventListener("change", () => {
     const value = selectMode.value;
     currMode = value;
     updateMode();
-    draw(c);
+    draw();
 });
