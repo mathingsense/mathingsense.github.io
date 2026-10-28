@@ -1,10 +1,12 @@
-import { initCanvas, randomInt } from "../common.js";
+import { randomInt } from "../common.js";
+import { applyCameraTransform, clearCanvas, fitWorld, initCanvas, resizeCanvas } from "../lib/canvas.js";
 import { Renderer, STROKE } from "../Renderer.js";
 
-const width = 600;
-const height = 600;
+const world = { x: 0, y: 0, w: 600, h: 600 };
+const camera = { x: 0, y: 0, zoom: 1 };
 
-const [_, c] = initCanvas("canvas", width, height);
+const { canvas, ctx: c } = initCanvas("canvas");
+fitWorld(canvas, camera, world);
 
 const button = document.getElementById("togglePlay");
 if (button === null) {
@@ -28,13 +30,13 @@ let dt = 0.01;  // angular velocity
 let t = 0;      // angle
 let dir = 0;    // direction of sofa
 
-const render = new Renderer(c, width, height);
+const render = new Renderer(c, world.w, world.h);
 
 const draw = () => {
-    c.save();
-    c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, width, height);
-    render.rect4(w, w, width - 2 * w, height - 2 * w, STROKE);
+    clearCanvas(canvas, c);
+    applyCameraTransform(canvas, c, camera);
+
+    render.rect4(w, w, world.w - 2 * w, world.h - 2 * w, STROKE);
     c.translate(x, y);
     c.rotate(t);
 
@@ -53,12 +55,12 @@ const draw = () => {
     switch (dir) {
         case 0:     // right
             x += v;
-            if (x + r2 > width)
+            if (x + r2 > world.w)
                 dir = 1;
             break;
         case 1:     // top right corner
             t += dt;
-            x = (width - w) - Math.cos(t) * r;
+            x = (world.w - w) - Math.cos(t) * r;
             y = w + Math.sin(t) * r;
             if (t > Math.PI / 2) {
                 t = Math.PI / 2;
@@ -67,13 +69,13 @@ const draw = () => {
             break;
         case 2:     // down
             y += v;
-            if (y + r2 > height)
+            if (y + r2 > world.h)
                 dir = 3;
             break;
         case 3:     // bottom left corner
             t += dt;
-            x = (width - w) + Math.cos(t) * r;
-            y = (width - w) - Math.sin(t) * r;
+            x = (world.w - w) + Math.cos(t) * r;
+            y = (world.w - w) - Math.sin(t) * r;
             if (t > Math.PI) {
                 t = Math.PI;
                 dir = 4;
@@ -87,7 +89,7 @@ const draw = () => {
         case 5:     // bottom left corner
             t += dt;
             x = w - Math.cos(t) * r;
-            y = (width - w) + Math.sin(t) * r;
+            y = (world.w - w) + Math.sin(t) * r;
             if (t > 3 / 2 * Math.PI) {
                 t = 3 / 2 * Math.PI;
                 dir = 6;
@@ -109,12 +111,17 @@ const draw = () => {
             break;
     }
 
-    c.restore();
     if (!paused) {
         requestAnimationFrame(draw);
     }
-}
+};
 draw();
+
+window.addEventListener('resize', () => {
+    resizeCanvas(canvas);
+    fitWorld(canvas, camera, world);
+    draw();
+});
 
 const randomRadius = () => {
     r = randomInt(10, 90);
@@ -127,7 +134,7 @@ const randomRadius = () => {
     paused = true;
     button.innerHTML = "play";
     draw();
-}
+};
 
 const togglePlay = () => {
     if (paused) {
@@ -137,7 +144,7 @@ const togglePlay = () => {
         button.innerHTML = "play";
     }
     paused = !paused;
-}
+};
 
 button.addEventListener("click", togglePlay, false);
 rand_button.addEventListener("click", randomRadius, false);
