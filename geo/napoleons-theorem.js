@@ -48,7 +48,7 @@ const draw = () => {
     // render.triangle(t, STROKE);
 
     // Draw draggable vertices
-    c.fillStyle = "#0000ff";
+    c.fillStyle = "#000";
     for (const v of vs) {
         render.pt(v, r, FILL);
     }
